@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useNotification } from '@/components/NotificationProvider';
 
 type User = {
   user_id: number;
@@ -14,6 +15,7 @@ type User = {
 };
 
 export default function UsersPage() {
+  const { confirm, notify } = useNotification();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -56,12 +58,25 @@ export default function UsersPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    const confirmed = await confirm({
+      title: 'Delete user',
+      message: 'Are you sure you want to delete this user?',
+      confirmText: 'Delete',
+    });
+    if (!confirmed) return;
     try {
       await fetch(`/api/users/${id}`, { method: 'DELETE' });
       fetchUsers();
+      notify({
+        title: 'User deleted',
+        message: 'The user account has been removed.',
+      });
     } catch (error) {
       console.error('Error deleting user:', error);
+      notify({
+        title: 'Delete failed',
+        message: 'Unable to delete the user. Please try again.',
+      });
     }
   };
 

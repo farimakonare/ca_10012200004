@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { useEffect, useState, ChangeEvent, FormEvent, useMemo } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useNotification } from '@/components/NotificationProvider';
 
 type Product = {
   product_id: number;
@@ -12,6 +13,7 @@ type Product = {
   stock_quantity: number;
   category_id: number;
   category?: { name: string };
+  image_url?: string | null;
 };
 
 type Category = {
@@ -19,20 +21,36 @@ type Category = {
   name: string;
 };
 
+type ProductForm = {
+  name: string;
+  description: string;
+  price: number;
+  stock_quantity: number;
+  category_id: number;
+  image_url: string;
+};
+
 export default function ProductsPage() {
-  const router = useRouter();
+  const { notify, confirm } = useNotification();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | number>('all');
+  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>(
+    'all'
+  );
+  const [formData, setFormData] = useState<ProductForm>({
     name: '',
     description: '',
     price: 0,
     stock_quantity: 0,
     category_id: 0,
+    image_url: '',
   });
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -64,42 +82,127 @@ export default function ProductsPage() {
       price: product.price,
       stock_quantity: product.stock_quantity,
       category_id: product.category_id,
+      image_url: product.image_url || '',
     });
     setShowModal(true);
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    const confirmed = await confirm({
+      title: 'Delete product',
+      message: 'Are you sure you want to delete this product? This action cannot be undone.',
+      confirmText: 'Delete',
+    });
+    if (!confirmed) return;
     try {
       await fetch(`/api/products/${id}`, { method: 'DELETE' });
       fetchData();
+      notify({
+        title: 'Product deleted',
+        message: 'The product and related data were removed successfully.',
+      });
     } catch (error) {
       console.error('Error deleting product:', error);
+      notify({
+        title: 'Delete failed',
+        message: 'Unable to delete the product. Please try again.',
+      });
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const url = editProduct
         ? `/api/products/${editProduct.product_id}`
         : '/api/products';
       const method = editProduct ? 'PUT' : 'POST';
+      const payload = {
+        ...formData,
+        image_url: formData.image_url || null,
+      };
 
       await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       setShowModal(false);
       setEditProduct(null);
-      setFormData({ name: '', description: '', price: 0, stock_quantity: 0, category_id: 0 });
+      setFormData({
+        name: '',
+        description: '',
+        price: 0,
+        stock_quantity: 0,
+        category_id: 0,
+        image_url: '',
+      });
       fetchData();
     } catch (error) {
       console.error('Error saving product:', error);
     }
   };
+
+  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      notify({
+        title: 'Invalid file',
+        message: 'Please select a valid image.',
+      });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      notify({
+        title: 'File too large',
+        message: 'Please upload an image smaller than 2MB.',
+      });
+      return;
+    }
+
+    setIsProcessingImage(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        image_url: typeof reader.result === 'string' ? reader.result : '',
+      }));
+      setIsProcessingImage(false);
+    };
+    reader.onerror = () => {
+      setIsProcessingImage(false);
+      notify({
+        title: 'Upload error',
+        message: 'Unable to read image file. Please try again.',
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const filteredProducts = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    return products.filter((product) => {
+      const matchesSearch = normalizedSearch
+        ? product.name.toLowerCase().includes(normalizedSearch) ||
+          (product.description?.toLowerCase().includes(normalizedSearch) ?? false) ||
+          String(product.product_id).includes(normalizedSearch)
+        : true;
+      const matchesCategory =
+        categoryFilter === 'all' ? true : product.category_id === Number(categoryFilter);
+      const matchesStock =
+        stockFilter === 'all'
+          ? true
+          : stockFilter === 'in_stock'
+          ? product.stock_quantity > 10
+          : stockFilter === 'low_stock'
+          ? product.stock_quantity > 0 && product.stock_quantity <= 10
+          : product.stock_quantity === 0;
+
+      return matchesSearch && matchesCategory && matchesStock;
+    });
+  }, [products, searchTerm, categoryFilter, stockFilter]);
 
   if (loading) {
     return (
@@ -116,7 +219,14 @@ export default function ProductsPage() {
         <button
           onClick={() => {
             setEditProduct(null);
-            setFormData({ name: '', description: '', price: 0, stock_quantity: 0, category_id: 0 });
+            setFormData({
+              name: '',
+              description: '',
+              price: 0,
+              stock_quantity: 0,
+              category_id: 0,
+              image_url: '',
+            });
             setShowModal(true);
           }}
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
@@ -124,6 +234,44 @@ export default function ProductsPage() {
           <Plus className="w-5 h-5" />
           Add Product
         </button>
+      </div>
+
+      <div className="mb-4 grid gap-3 md:grid-cols-3">
+        <input
+          type="search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by name, description, or ID"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+        />
+        <select
+          value={categoryFilter}
+          onChange={(e) =>
+            setCategoryFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
+          }
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="all">All categories</option>
+          {categories.map((category) => (
+            <option key={category.category_id} value={category.category_id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={stockFilter}
+          onChange={(e) =>
+            setStockFilter(
+              e.target.value as 'all' | 'in_stock' | 'low_stock' | 'out_of_stock'
+            )
+          }
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="all">All stock levels</option>
+          <option value="in_stock">Healthy stock (&gt; 10)</option>
+          <option value="low_stock">Low stock (1 - 10)</option>
+          <option value="out_of_stock">Out of stock</option>
+        </select>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -136,6 +284,9 @@ export default function ProductsPage() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Image
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Price
@@ -152,13 +303,27 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <tr key={product.product_id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {product.product_id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {product.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {product.image_url ? (
+                      <Image
+                        src={product.image_url}
+                        alt={product.name}
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                        unoptimized
+                      />
+                    ) : (
+                      <span className="text-xs text-gray-500">No image</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     GHC {product.price.toFixed(2)}
@@ -197,6 +362,13 @@ export default function ProductsPage() {
                   </td>
                 </tr>
               ))}
+              {filteredProducts.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500 text-sm">
+                    No products match your filters.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -232,6 +404,51 @@ export default function ProductsPage() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Image
+                </label>
+                <div className="space-y-3">
+                  {formData.image_url ? (
+                    <div className="relative w-full h-48">
+                      <Image
+                        src={formData.image_url}
+                        alt={formData.name || 'Product preview'}
+                        fill
+                        sizes="100vw"
+                        className="object-cover rounded-lg border border-gray-200"
+                        unoptimized
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image_url: '' })}
+                        className="absolute top-3 right-3 bg-white/90 px-3 py-1 rounded-full text-xs font-medium text-gray-700 border border-gray-200 hover:bg-white"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="h-32 border border-dashed border-gray-300 rounded-lg flex items-center justify-center text-sm text-gray-500 bg-gray-50">
+                      No image selected
+                    </div>
+                  )}
+                  <div>
+                    <label className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                      <Plus className="w-4 h-4 text-gray-500" />
+                      Upload Image
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={handleImageChange}
+                      />
+                    </label>
+                    {isProcessingImage && (
+                      <p className="text-xs text-gray-500 mt-2">Processing image...</p>
+                    )}
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>

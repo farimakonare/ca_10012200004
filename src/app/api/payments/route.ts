@@ -3,7 +3,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const payments = await prisma.payment.findMany({
-    include: { user: true, order: true },
+    include: {
+      user: true,
+      order: {
+        include: {
+          shipment: true,
+          user: true,
+        },
+      },
+    },
   });
   return NextResponse.json(payments);
 }

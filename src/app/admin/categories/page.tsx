@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useNotification } from '@/components/NotificationProvider';
 
 type Category = {
   category_id: number;
@@ -10,6 +11,7 @@ type Category = {
 };
 
 export default function CategoriesPage() {
+  const { notify, confirm } = useNotification();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -40,12 +42,25 @@ export default function CategoriesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
+    const confirmed = await confirm({
+      title: 'Delete category',
+      message: 'Deleting a category will also remove its products. Continue?',
+      confirmText: 'Delete',
+    });
+    if (!confirmed) return;
     try {
       await fetch(`/api/categories/${id}`, { method: 'DELETE' });
       fetchCategories();
+      notify({
+        title: 'Category deleted',
+        message: 'The category and associated products were removed.',
+      });
     } catch (error) {
       console.error('Error deleting category:', error);
+      notify({
+        title: 'Delete failed',
+        message: 'Unable to delete the category. Please try again.',
+      });
     }
   };
 

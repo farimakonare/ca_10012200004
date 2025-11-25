@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, MapPin } from 'lucide-react';
+import { useNotification } from '@/components/NotificationProvider';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { notify } = useNotification();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,7 +44,10 @@ export default function LoginPage() {
             router.push('/shop');
           }
         } else {
-          alert('Invalid email or user not found. Please register first.');
+          notify({
+            title: 'Login failed',
+            message: 'Invalid email or user not found. Please register first.',
+          });
         }
       } else {
         // Register - Create new user
@@ -67,12 +72,18 @@ export default function LoginPage() {
             router.push('/shop');
           }
         } else {
-          alert('Registration failed. Please try again.');
+          notify({
+            title: 'Registration failed',
+            message: 'Please try again.',
+          });
         }
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Something went wrong. Please try again.');
+      notify({
+        title: 'Error',
+        message: 'Something went wrong. Please try again.',
+      });
     } finally {
       setLoading(false);
     }

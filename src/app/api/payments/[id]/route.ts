@@ -6,7 +6,15 @@ type Params = { params: { id: string } };
 export async function GET(_req: Request, { params }: Params) {
   const payment = await prisma.payment.findUnique({
     where: { payment_id: Number(params.id) },
-    include: { user: true, order: true },
+    include: {
+      user: true,
+      order: {
+        include: {
+          shipment: true,
+          user: true,
+        },
+      },
+    },
   });
   if (!payment) return NextResponse.json({ error: "Payment not found" }, { status: 404 });
   return NextResponse.json(payment);

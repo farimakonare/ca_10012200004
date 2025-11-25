@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { deleteProductCascade } from "@/lib/productCleanup";
 
 type Params = { params: { id: string } };
 
@@ -51,8 +52,25 @@ export async function PUT(req: Request, { params }: Params) {
 // Delete category
 export async function DELETE(_req: Request, { params }: Params) {
   try {
-    await prisma.category.delete({ where: { category_id: Number(params.id) } });
-    return NextResponse.json({ message: "Category deleted successfully" });
+    const categoryId = Number(params.id);
+
+    const category = await prisma.category.findUnique({
+      where: { category_id: categoryId },
+      select: { products: { select: { product_id: true } } },
+    });
+
+    if (!category) {
+      return NextResponse.json({ error: "Category not found" }, { status: 404 });
+    }
+
+    for (const product of category.products) {
+      await deleteProductCascade(product.product_id);
+    }
+
+    await prisma.category.delete({ where: { category_id: categoryId } });
+    return NextResponse.json({
+      message: "Category and associated products deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting category:", error);
     return NextResponse.json(

@@ -1,209 +1,466 @@
-// // src/app/adminDashboard/shipments/page.tsx
-// "use client";
+'use client';
 
-// import { useState, useEffect } from "react";
-// import { Button } from "@/components/ui/button";
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Badge } from "@/components/ui/badge";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-// import { Package, Truck, Calendar } from "lucide-react";
+import { useEffect, useMemo, useState } from 'react';
+import { Truck } from 'lucide-react';
+import { useNotification } from '@/components/NotificationProvider';
 
-// interface Shipment {
-//   shipment_id: number;
-//   order_id: number;
-//   shipment_date: string;
-//   status: string;
-//   order?: {
-//     total_amount: number;
-//     user?: {
-//       user_name: string;
-//     };
-//   };
-// }
+type ShipmentEvent = {
+  event_id: number;
+  status: string;
+  note?: string | null;
+  created_at: string;
+};
 
-// export default function ShipmentsManagement() {
-//   const [shipments, setShipments] = useState<Shipment[]>([]);
-//   const [statusFilter, setStatusFilter] = useState("all");
-//   const [loading, setLoading] = useState(true);
+type ShipmentRecord = {
+  shipment_id: number;
+  order_id: number;
+  shipment_date: string;
+  status: string;
+  tracking_number: string | null;
+  carrier: string | null;
+  order?: {
+    user?: { user_name: string; user_email: string } | null;
+  } | null;
+  events?: ShipmentEvent[];
+};
 
-//   useEffect(() => {
-//     fetchShipments();
-//   }, []);
+type FormValues = {
+  status: string;
+  tracking_number: string;
+  carrier: string;
+  note: string;
+};
 
-//   const fetchShipments = async () => {
-//     try {
-//       const res = await fetch('/api/shipments');
-//       const data = await res.json();
-//       setShipments(data);
-//     } catch (error) {
-//       console.error('Error fetching shipments:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+const statusOptions = [
+  'pending_payment',
+  'preparing_shipment',
+  'in_transit',
+  'delivered',
+  'cancelled',
+];
 
-//   const updateShipmentStatus = async (shipmentId: number, newStatus: string) => {
-//     try {
-//       await fetch(`/api/shipments/${shipmentId}`, {
-//         method: 'PUT',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ status: newStatus })
-//       });
-//       fetchShipments();
-//     } catch (error) {
-//       console.error('Error updating shipment status:', error);
-//     }
-//   };
+const statusRank = statusOptions.reduce<Record<string, number>>((acc, status, index) => {
+  acc[status] = index;
+  return acc;
+}, {});
 
-//   const filteredShipments = statusFilter === "all"
-//     ? shipments
-//     : shipments.filter(s => s.status === statusFilter);
+export default function AdminShipmentsPage() {
+  const { notify } = useNotification();
+  const [shipments, setShipments] = useState<ShipmentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [formState, setFormState] = useState<Record<number, FormValues>>({});
+  const [statusFilter, setStatusFilter] = useState<'all' | string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [shipmentPage, setShipmentPage] = useState(1);
+  const [shipmentsPerPage, setShipmentsPerPage] = useState(8);
 
-//   const getStatusColor = (status: string) => {
-//     switch(status) {
-//       case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-//       case 'in_transit': return 'bg-blue-100 text-blue-800 border-blue-200';
-//       case 'delivered': return 'bg-green-100 text-green-800 border-green-200';
-//       case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
-//       default: return 'bg-gray-100 text-gray-800 border-gray-200';
-//     }
-//   };
+  useEffect(() => {
+    fetchShipments();
+  }, []);
 
-//   const formatStatus = (status: string) => {
-//     return status.split('_').map(word => 
-//       word.charAt(0).toUpperCase() + word.slice(1)
-//     ).join(' ');
-//   };
+  useEffect(() => {
+    const initial: Record<number, FormValues> = {};
+    shipments.forEach((shipment) => {
+      initial[shipment.shipment_id] = {
+        status: shipment.status,
+        tracking_number: shipment.tracking_number || '',
+        carrier: shipment.carrier || '',
+        note: '',
+      };
+    });
+    setFormState(initial);
+  }, [shipments]);
 
-//   if (loading) {
-//     return (
-//       <div className="space-y-6">
-//         <div className="animate-pulse">
-//           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-//           <div className="h-96 bg-gray-200 rounded-lg"></div>
-//         </div>
-//       </div>
-//     );
-//   }
+  const fetchShipments = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/shipments', { cache: 'no-store' });
+      const data = await res.json();
+      setShipments(data);
+    } catch (error) {
+      console.error('Error fetching shipments:', error);
+      notify({ title: 'Error', message: 'Unable to load shipments.' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//   return (
-//     <div className="space-y-6">
-//       {/* Page Header */}
-//       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-//         <div>
-//           <h2 className="text-3xl font-bold text-gray-900">Shipments</h2>
-//           <p className="text-gray-600 mt-1">Track and manage order shipments</p>
-//         </div>
-//         <Select value={statusFilter} onValueChange={setStatusFilter}>
-//           <SelectTrigger className="w-48">
-//             <SelectValue placeholder="Filter by status" />
-//           </SelectTrigger>
-//           <SelectContent>
-//             <SelectItem value="all">All Shipments</SelectItem>
-//             <SelectItem value="pending">Pending</SelectItem>
-//             <SelectItem value="in_transit">In Transit</SelectItem>
-//             <SelectItem value="delivered">Delivered</SelectItem>
-//             <SelectItem value="cancelled">Cancelled</SelectItem>
-//           </SelectContent>
-//         </Select>
-//       </div>
+  const handleFieldChange = (shipmentId: number, field: keyof FormValues, value: string) => {
+    if (field === 'status') {
+      const shipment = shipments.find((s) => s.shipment_id === shipmentId);
+      if (!shipment) return;
+      const currentRank = statusRank[shipment.status] ?? 0;
+      const nextRank = statusRank[value] ?? 0;
+      if (nextRank < currentRank) {
+        notify({
+          title: 'Cannot revert status',
+          message: 'Shipments can only move forward in the delivery timeline.',
+        });
+        return;
+      }
+    }
+    setFormState((prev) => ({
+      ...prev,
+      [shipmentId]: {
+        ...(prev[shipmentId] || { status: '', tracking_number: '', carrier: '', note: '' }),
+        [field]: value,
+      },
+    }));
+  };
 
-//       {/* Shipments List */}
-//       <Card className="border-gray-200">
-//         <CardHeader>
-//           <div className="flex items-center justify-between">
-//             <CardTitle>Shipments List</CardTitle>
-//             <Badge variant="secondary" className="text-sm">
-//               {filteredShipments.length} {filteredShipments.length === 1 ? 'shipment' : 'shipments'}
-//             </Badge>
-//           </div>
-//         </CardHeader>
-//         <CardContent>
-//           {filteredShipments.length === 0 ? (
-//             <div className="text-center py-12">
-//               <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-//               <p className="text-gray-500 text-lg font-medium">No shipments found</p>
-//               <p className="text-gray-400 text-sm mt-1">
-//                 {statusFilter === "all" ? "No shipments have been created yet" : `No ${formatStatus(statusFilter).toLowerCase()} shipments`}
-//               </p>
-//             </div>
-//           ) : (
-//             <div className="overflow-x-auto">
-//               <table className="w-full">
-//                 <thead>
-//                   <tr className="border-b border-gray-200">
-//                     <th className="text-left p-4 font-semibold text-gray-700">Shipment ID</th>
-//                     <th className="text-left p-4 font-semibold text-gray-700">Order ID</th>
-//                     <th className="text-left p-4 font-semibold text-gray-700">Customer</th>
-//                     <th className="text-left p-4 font-semibold text-gray-700">Shipment Date</th>
-//                     <th className="text-left p-4 font-semibold text-gray-700">Status</th>
-//                     <th className="text-right p-4 font-semibold text-gray-700">Update Status</th>
-//                   </tr>
-//                 </thead>
-//                 <tbody>
-//                   {filteredShipments.map((shipment) => (
-//                     <tr key={shipment.shipment_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-//                       <td className="p-4">
-//                         <div className="flex items-center gap-2">
-//                           <Package className="h-4 w-4 text-gray-400" />
-//                           <span className="font-medium text-gray-900">#{shipment.shipment_id}</span>
-//                         </div>
-//                       </td>
-//                       <td className="p-4">
-//                         <span className="font-medium text-blue-600">Order #{shipment.order_id}</span>
-//                       </td>
-//                       <td className="p-4">
-//                         <span className="text-gray-700">{shipment.order?.user?.user_name || 'N/A'}</span>
-//                       </td>
-//                       <td className="p-4">
-//                         <div className="flex items-center gap-2 text-gray-600">
-//                           <Calendar className="h-4 w-4 text-gray-400" />
-//                           <span className="text-sm">
-//                             {new Date(shipment.shipment_date).toLocaleDateString('en-US', {
-//                               year: 'numeric',
-//                               month: 'short',
-//                               day: 'numeric'
-//                             })}
-//                           </span>
-//                         </div>
-//                       </td>
-//                       <td className="p-4">
-//                         <Badge className={`${getStatusColor(shipment.status)} border`}>
-//                           {formatStatus(shipment.status)}
-//                         </Badge>
-//                       </td>
-//                       <td className="p-4">
-//                         <div className="flex justify-end">
-//                           <Select
-//                             value={shipment.status}
-//                             onValueChange={(value) => updateShipmentStatus(shipment.shipment_id, value)}
-//                           >
-//                             <SelectTrigger className="w-40 h-8">
-//                               <SelectValue />
-//                             </SelectTrigger>
-//                             <SelectContent>
-//                               <SelectItem value="pending">Pending</SelectItem>
-//                               <SelectItem value="in_transit">In Transit</SelectItem>
-//                               <SelectItem value="delivered">Delivered</SelectItem>
-//                               <SelectItem value="cancelled">Cancelled</SelectItem>
-//                             </SelectContent>
-//                           </Select>
-//                         </div>
-//                       </td>
-//                     </tr>
-//                   ))}
-//                 </tbody>
-//               </table>
-//             </div>
-//           )}
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
+  const shipmentStatusIsLocked = (status: string) => ['delivered', 'cancelled'].includes(status);
+
+  const orderStatusFromShipment = (status: string) => {
+    switch (status) {
+      case 'pending_payment':
+        return 'pending_payment';
+      case 'preparing_shipment':
+        return 'preparing_shipment';
+      case 'in_transit':
+        return 'in_transit';
+      case 'delivered':
+        return 'completed';
+      case 'cancelled':
+        return 'cancelled';
+      default:
+        return 'processing';
+    }
+  };
+
+  const handleSave = async (shipment: ShipmentRecord) => {
+    const current = formState[shipment.shipment_id];
+    if (!current) return;
+    if (shipmentStatusIsLocked(shipment.status)) {
+      notify({
+        title: 'Status locked',
+        message: 'Delivered or cancelled shipments cannot be edited.',
+      });
+      return;
+    }
+    try {
+      await fetch(`/api/shipments/${shipment.shipment_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: current.status,
+          tracking_number: current.tracking_number || null,
+          carrier: current.carrier || null,
+        }),
+      });
+
+      if (shipment.status !== current.status || current.note.trim()) {
+        await fetch('/api/shipment-events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shipment_id: shipment.shipment_id,
+            status: current.status,
+            note: current.note.trim() || null,
+          }),
+        });
+      }
+
+      const nextOrderStatus = orderStatusFromShipment(current.status);
+      if (nextOrderStatus) {
+        await fetch(`/api/orders/${shipment.order_id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: nextOrderStatus }),
+        });
+      }
+
+      await notify({
+        title: 'Shipment updated',
+        message: `Shipment #${shipment.shipment_id} details saved.`,
+      });
+      fetchShipments();
+    } catch (error) {
+      console.error('Error updating shipment:', error);
+      notify({ title: 'Update failed', message: 'Unable to update shipment.' });
+    }
+  };
+
+  const formatStatus = (status: string) =>
+    status
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+  const filteredShipments = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    return shipments.filter((shipment) => {
+      const matchesStatus = statusFilter === 'all' ? true : shipment.status === statusFilter;
+      const matchesSearch = normalizedSearch
+        ? [
+            String(shipment.shipment_id),
+            String(shipment.order_id),
+            shipment.order?.user?.user_name ?? '',
+            shipment.order?.user?.user_email ?? '',
+          ].some((value) => value.toLowerCase().includes(normalizedSearch))
+        : true;
+      return shipment.status !== 'pending_payment' && matchesStatus && matchesSearch;
+    });
+  }, [shipments, statusFilter, searchTerm]);
+
+  const totalShipmentPages = Math.max(1, Math.ceil(filteredShipments.length / shipmentsPerPage));
+
+  useEffect(() => {
+    setShipmentPage(1);
+  }, [statusFilter, searchTerm, shipmentsPerPage]);
+
+  useEffect(() => {
+    if (shipmentPage > totalShipmentPages) {
+      setShipmentPage(totalShipmentPages);
+    }
+  }, [totalShipmentPages, shipmentPage]);
+
+  const paginatedShipments = useMemo(() => {
+    const start = (shipmentPage - 1) * shipmentsPerPage;
+    return filteredShipments.slice(start, start + shipmentsPerPage);
+  }, [filteredShipments, shipmentPage, shipmentsPerPage]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-80">
+        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Truck className="w-5 h-5 text-indigo-500" />
+            Shipments
+          </h1>
+          <p className="text-gray-600 mt-1">Track and update delivery progress.</p>
+        </div>
+        <span className="text-sm text-gray-500">
+          Showing {filteredShipments.length} of {shipments.length} shipment
+          {shipments.length === 1 ? '' : 's'}
+        </span>
+      </div>
+
+      <div className="mb-4 grid gap-3 md:grid-cols-3">
+        <input
+          type="search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search shipment/order/customer"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="all">All shipment statuses</option>
+          {statusOptions.map((status) => (
+            <option key={status} value={status}>
+              {formatStatus(status)}
+            </option>
+          ))}
+        </select>
+        <div className="flex items-center justify-end text-sm text-gray-500">
+          Showing {filteredShipments.length} of {shipments.length} shipments • Updated{' '}
+          {new Date().toLocaleTimeString()}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {filteredShipments.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-8 text-center text-gray-500">
+            No shipments match your filters.
+          </div>
+        )}
+        {paginatedShipments.map((shipment) => {
+          const form = formState[shipment.shipment_id];
+          const events = shipment.events || [];
+          const isLocked = shipmentStatusIsLocked(shipment.status);
+
+          return (
+            <div key={shipment.shipment_id} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(shipment.shipment_date).toLocaleDateString()}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Shipment #{shipment.shipment_id} • Order #{shipment.order_id}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {shipment.order?.user?.user_name || 'Unknown customer'} •{' '}
+                    {shipment.order?.user?.user_email}
+                  </p>
+                </div>
+                <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                  {formatStatus(shipment.status)}
+                </span>
+              </div>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <div className="space-y-3">
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">
+                    Tracking number
+                  </label>
+                  <input
+                    type="text"
+                    value={form?.tracking_number ?? ''}
+                    onChange={(e) =>
+                      handleFieldChange(shipment.shipment_id, 'tracking_number', e.target.value)
+                    }
+                    disabled={isLocked}
+                    className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm ${
+                      isLocked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                    }`}
+                    placeholder="Enter tracking number"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">
+                    Carrier
+                  </label>
+                  <input
+                    type="text"
+                    value={form?.carrier ?? ''}
+                    onChange={(e) =>
+                      handleFieldChange(shipment.shipment_id, 'carrier', e.target.value)
+                    }
+                    disabled={isLocked}
+                    className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm ${
+                      isLocked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                    }`}
+                    placeholder="e.g. DHL, FedEx"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">
+                    Status
+                  </label>
+                  <select
+                    value={form?.status ?? shipment.status}
+                    onChange={(e) =>
+                      handleFieldChange(shipment.shipment_id, 'status', e.target.value)
+                    }
+                    disabled={isLocked}
+                    className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm ${
+                      isLocked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {statusOptions.map((status) => (
+                      <option
+                        key={status}
+                        value={status}
+                        disabled={statusRank[status] < (statusRank[shipment.status] ?? 0)}
+                      >
+                        {formatStatus(status)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-3">
+                  <label className="block text-xs font-semibold text-gray-600 uppercase">
+                    Update note
+                  </label>
+                  <textarea
+                    value={form?.note ?? ''}
+                    onChange={(e) =>
+                      handleFieldChange(shipment.shipment_id, 'note', e.target.value)
+                    }
+                    disabled={isLocked}
+                    className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm ${
+                      isLocked ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                    }`}
+                    placeholder="Optional note for this update"
+                    rows={2}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => handleSave(shipment)}
+                  disabled={isLocked}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold text-white ${
+                    isLocked
+                      ? 'bg-gray-300 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700'
+                  }`}
+                >
+                  Save update
+                </button>
+              </div>
+
+              {isLocked && (
+                <p className="mt-2 text-xs font-medium text-gray-500">
+                  Shipment marked as {shipment.status}. Further edits are disabled.
+                </p>
+              )}
+
+              <div className="mt-6 border-t border-gray-200 pt-4">
+                <p className="text-sm font-semibold text-gray-900 mb-3">Tracking timeline</p>
+                {events.length === 0 ? (
+                  <p className="text-sm text-gray-500">No updates yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {events.map((event) => (
+                      <div key={event.event_id} className="relative pl-5">
+                        <span className="absolute left-1 top-2 h-2 w-2 rounded-full bg-indigo-500" />
+                        <p className="text-sm font-semibold text-gray-900">
+                          {formatStatus(event.status)}{' '}
+                          <span className="ml-2 text-xs font-normal text-gray-500">
+                            {new Date(event.created_at).toLocaleString()}
+                          </span>
+                        </p>
+                        {event.note && <p className="text-sm text-gray-600">{event.note}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {filteredShipments.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 rounded-3xl border border-gray-200 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <span>
+                Page {shipmentPage} of {totalShipmentPages}
+              </span>
+              <select
+                value={shipmentsPerPage}
+                onChange={(e) => setShipmentsPerPage(Number(e.target.value))}
+                className="w-[100px] rounded-lg border border-gray-300 px-2 py-1 text-sm"
+              >
+                {[2, 5, 8, 15, 30].map((size) => (
+                  <option key={size} value={size}>
+                    {size} / page
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShipmentPage((prev) => Math.max(1, prev - 1))}
+                disabled={shipmentPage === 1}
+                className="rounded-lg border border-gray-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setShipmentPage((prev) => Math.min(totalShipmentPages, prev + 1))}
+                disabled={shipmentPage === totalShipmentPages}
+                className="rounded-lg border border-gray-300 px-3 py-1 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      </div>
+  );
+}

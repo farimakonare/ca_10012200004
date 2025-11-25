@@ -1,8 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ShoppingCart, Star, ArrowLeft, Minus, Plus } from 'lucide-react';
+import { useNotification } from '@/components/NotificationProvider';
 
 type Product = {
   product_id: number;
@@ -11,6 +13,7 @@ type Product = {
   price: number;
   stock_quantity: number;
   category_id: number;
+  image_url?: string | null;
   category?: { name: string };
   reviews?: Array<{
     review_id: number;
@@ -23,6 +26,7 @@ type Product = {
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { notify } = useNotification();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -46,15 +50,18 @@ export default function ProductDetailPage() {
     }
   };
 
-  const addToCart = () => {
+  const addToCart = async () => {
     if (!product) return;
 
     // Check if user is logged in
     const userStr = localStorage.getItem('currentUser');
     if (!userStr) {
       // Save redirect URL and go to login
-      localStorage.setItem('redirectAfterLogin', `/products/${product.product_id}`);
-      router.push('/login');
+      localStorage.setItem(
+        'redirectAfterLogin',
+        `/shop/products/${product.product_id}`
+      );
+      router.push('/shop/login');
       return;
     }
 
@@ -70,6 +77,8 @@ export default function ProductDetailPage() {
     if (existingIndex >= 0) {
       // Update quantity
       cart[existingIndex].quantity += quantity;
+      cart[existingIndex].image_url =
+        product.image_url || cart[existingIndex].image_url || null;
     } else {
       // Add new item
       cart.push({
@@ -78,15 +87,18 @@ export default function ProductDetailPage() {
         price: product.price,
         quantity: quantity,
         stock_quantity: product.stock_quantity,
+        image_url: product.image_url || null,
       });
     }
 
     // Save cart
     localStorage.setItem('cart', JSON.stringify(cart));
-    alert(`Added ${quantity} ${product.name} to cart!`);
-    
-    // Go to cart
-    router.push('/cart');
+    await notify({
+      title: 'Added to cart',
+      message: `Added ${quantity} × ${product.name} to your cart.`,
+    });
+
+    router.push('/shop/cart');
   };
 
   const increaseQuantity = () => {
@@ -141,8 +153,19 @@ export default function ProductDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Product Image */}
-        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl h-96 lg:h-full flex items-center justify-center">
-          <div className="text-gray-400 text-9xl">📦</div>
+        <div className="bg-gray-50 rounded-2xl h-96 lg:h-full flex items-center justify-center overflow-hidden relative">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+              unoptimized
+            />
+          ) : (
+            <div className="text-gray-200 text-9xl">📦</div>
+          )}
         </div>
 
         {/* Product Info */}

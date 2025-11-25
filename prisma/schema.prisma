@@ -27,6 +27,7 @@ model Product {
   description    String?
   price          Float
   stock_quantity Int
+  image_url      String?
 
   category_id Int
   category    Category  @relation(fields: [category_id], references: [category_id])
@@ -70,9 +71,25 @@ model Shipment {
   shipment_id   Int      @id @default(autoincrement())
   order_id      Int      @unique
   shipment_date DateTime
+  delivery_date DateTime?
   status        String
+  tracking_number String?
+  carrier       String?
 
   order Order @relation(fields: [order_id], references: [order_id])
+  events ShipmentEvent[]
+}
+
+model ShipmentEvent {
+  event_id     Int      @id @default(autoincrement())
+  shipment_id  Int
+  status       String
+  note         String?
+  created_at   DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipment_id], references: [shipment_id])
+
+  @@index([shipment_id])
 }
 
 model Payment {
@@ -83,6 +100,9 @@ model Payment {
   payment_method String
   payment_status String
   total_amount   Float
+  proof_image        String?
+  proof_uploaded_at  DateTime?
+  proof_reviewed_at  DateTime?
 
   user  User  @relation(fields: [user_id], references: [user_id])
   order Order @relation(fields: [order_id], references: [order_id])

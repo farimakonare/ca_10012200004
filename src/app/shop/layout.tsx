@@ -1,16 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { ShoppingCart, User, Search, Home, LogOut } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { ShoppingCart, User, Search, Home, LogOut, Package } from 'lucide-react';
+import { useState, useEffect, FormEvent } from 'react';
+import { useNotification } from '@/components/NotificationProvider';
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { confirm } = useNotification();
   const [cartCount, setCartCount] = useState(0);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     // Check if user is logged in
@@ -43,6 +47,11 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       window.removeEventListener('cartUpdated', updateCartCount);
     };
   }, []);
+
+  useEffect(() => {
+    const currentQuery = searchParams.get('search') ?? '';
+    setSearchTerm(currentQuery);
+  }, [searchParams]);
 
   const updateCartCount = () => {
     const cartStr = localStorage.getItem('cart');
@@ -78,16 +87,55 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('cart');
-      setCurrentUser(null);
-      setCartCount(0);
-      setShowProfileMenu(false);
-      router.push('/shop');
-      window.location.reload();
+  const handleLogout = async () => {
+    const confirmed = await confirm({
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      confirmText: 'Logout',
+    });
+    if (!confirmed) return;
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('cart');
+    setCurrentUser(null);
+    setCartCount(0);
+    setShowProfileMenu(false);
+    router.push('/shop');
+    window.location.reload();
+  };
+
+  const navigateWithSearch = (value: string, method: 'push' | 'replace' = 'replace') => {
+    const trimmed = value.trim();
+    const targetSearch = trimmed ? value : null;
+    const currentSearch = searchParams.get('search');
+    const onShopPage = pathname === '/shop';
+
+    if (onShopPage) {
+      const currentIsEmpty = !currentSearch || currentSearch.trim() === '';
+      const targetIsEmpty = !targetSearch;
+      if (currentIsEmpty && targetIsEmpty) {
+        return;
+      }
+      if (!targetIsEmpty && currentSearch === targetSearch) {
+        return;
+      }
     }
+
+    const destination = trimmed ? `/shop?search=${encodeURIComponent(value)}` : '/shop';
+    if (method === 'push') {
+      router.push(destination);
+    } else {
+      router.replace(destination);
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    navigateWithSearch(value, 'replace');
+  };
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    navigateWithSearch(searchTerm, 'push');
   };
 
   return (
@@ -106,14 +154,16 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
             {/* Search Bar */}
             <div className="hidden md:flex flex-1 max-w-lg mx-8">
-              <div className="relative w-full">
+              <form onSubmit={handleSearchSubmit} className="relative w-full">
                 <input
                   type="text"
                   placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 />
-                <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-              </div>
+                <Search className="pointer-events-none absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+              </form>
             </div>
 
             {/* Navigation */}
@@ -126,6 +176,18 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               >
                 <Home className="w-5 h-5" />
                 <span className="hidden sm:inline">Home</span>
+              </Link>
+
+              <Link
+                href="/shop/orders"
+                className={`flex items-center gap-2 text-sm font-medium transition ${
+                  pathname.startsWith('/shop/orders')
+                    ? 'text-indigo-600'
+                    : 'text-gray-700 hover:text-indigo-600'
+                }`}
+              >
+                <Package className="w-5 h-5" />
+                <span className="hidden sm:inline">My Orders</span>
               </Link>
 
               {/* Cart Link */}
@@ -203,14 +265,16 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
 
           {/* Mobile Search */}
           <div className="md:hidden pb-3">
-            <div className="relative">
+            <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 type="text"
                 placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
-              <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-            </div>
+              <Search className="pointer-events-none absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+            </form>
           </div>
         </div>
       </header>

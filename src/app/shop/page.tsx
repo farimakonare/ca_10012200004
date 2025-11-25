@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { ShoppingCart, Star } from 'lucide-react';
 import Link from 'next/link';
+import { useNotification } from '@/components/NotificationProvider';
 
 type Product = {
   product_id: number;
@@ -13,6 +15,7 @@ type Product = {
   stock_quantity: number;
   category_id: number;
   category?: { name: string };
+  image_url?: string | null;
 };
 
 type Category = {
@@ -22,10 +25,14 @@ type Category = {
 
 export default function HomePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { notify } = useNotification();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const rawSearchTerm = searchParams.get('search') ?? '';
+  const normalizedSearchTerm = rawSearchTerm.trim().toLowerCase();
 
   useEffect(() => {
     fetchData();
@@ -49,9 +56,15 @@ export default function HomePage() {
     }
   };
 
-  const filteredProducts = selectedCategory
-    ? products.filter((p) => p.category_id === selectedCategory)
-    : products;
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory = selectedCategory ? product.category_id === selectedCategory : true;
+    const matchesSearch = normalizedSearchTerm
+      ? product.name.toLowerCase().includes(normalizedSearchTerm) ||
+        (product.description?.toLowerCase().includes(normalizedSearchTerm) ?? false)
+      : true;
+
+    return matchesCategory && matchesSearch;
+  });
 
   const addToCart = (product: Product) => {
     // Check if user is logged in
@@ -75,7 +88,12 @@ export default function HomePage() {
     if (existingIndex >= 0) {
       // Update quantity
       cart[existingIndex].quantity += 1;
-      alert(`Updated ${product.name} quantity in cart!`);
+      cart[existingIndex].image_url =
+        product.image_url || cart[existingIndex].image_url || null;
+      notify({
+        title: 'Cart updated',
+        message: `Updated ${product.name} quantity in your cart.`,
+      });
     } else {
       // Add new item
       cart.push({
@@ -84,8 +102,12 @@ export default function HomePage() {
         price: product.price,
         quantity: 1,
         stock_quantity: product.stock_quantity,
+        image_url: product.image_url || null,
       });
-      alert(`Added ${product.name} to cart!`);
+      notify({
+        title: 'Added to cart',
+        message: `${product.name} has been added to your cart.`,
+      });
     }
 
     // Save cart
@@ -104,140 +126,196 @@ export default function HomePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 md:p-12 mb-8 text-white">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome to Cartzie</h1>
-        <p className="text-lg mb-6 text-indigo-100">
-          Discover amazing products at unbeatable prices
-        </p>
-        <button 
-          onClick={() => window.scrollTo({ top: 400, behavior: 'smooth' })}
-          className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition"
-        >
-          Shop Now
-        </button>
-      </div>
+    <div className="min-h-screen bg-white from-amber-50 via-rose-50 to-lime-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+        {/* Hero Section */}
+        {/* <section className="grid gap-8 lg:grid-cols-2 lg:items-center rounded-3xl bg-white/80 p-6 shadow-xl shadow-rose-100 border border-white">
+          <div className="space-y-4">
+            <p className="inline-flex items-center gap-2 rounded-full bg-lime-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-lime-700">
+              Panaya Store
+            </p>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-lime-900">
+              Natural fruit drinks & creamy cereal mix, bottled fresh every morning.
+            </h1>
+            <p className="text-lime-800">
+              Shop Panaya&apos;s rainbow of cold-pressed juices and the beloved cereal blend that
+              pairs perfectly with each bottle. Everything is made without added sugar or
+              preservatives—just the taste of real fruit and grains.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => window.scrollTo({ top: 500, behavior: 'smooth' })}
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:brightness-110"
+              >
+                Sip & shop now
+              </button>
+              <Link
+                href="/shop/orders"
+                className="inline-flex items-center gap-2 rounded-full border border-lime-500 px-6 py-3 text-sm font-semibold text-lime-800 hover:bg-lime-50"
+              >
+                Track my orders
+              </Link>
+            </div>
+          </div>
+          <div className="relative h-64 w-full overflow-hidden rounded-3xl">
+            <Image
+              src="/drink-b-1.jpeg"
+              alt="Panaya juice hero"
+              fill
+              className="object-cover"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/40 to-transparent p-3 text-sm text-white">
+              Pressed the same morning your bottle ships.
+            </div>
+          </div>
+        </section> */}
 
-      {/* Categories Filter */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Shop by Category</h2>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              selectedCategory === null
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:border-indigo-600'
-            }`}
-          >
-            All Products
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.category_id}
-              onClick={() => setSelectedCategory(cat.category_id)}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
-                selectedCategory === cat.category_id
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:border-indigo-600'
-              }`}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Products Grid */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          {selectedCategory
-            ? categories.find((c) => c.category_id === selectedCategory)?.name
-            : 'All Products'}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
+        {/* Highlights */}
+        {/* <section className="grid gap-4 md:grid-cols-3">
+          {[
+            { label: 'Juices today', value: filteredProducts.length, detail: 'Small, vibrant batches' },
+            { label: 'Cereal goodness', value: 'Panaya Mix', detail: 'Millet • tiger nuts • spices' },
+            { label: 'Zero additives', value: 'No sugar, no preservatives', detail: 'Just fruit + grain' },
+          ].map((item) => (
             <div
-              key={product.product_id}
-              className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition group"
+              key={item.label}
+              className="rounded-2xl bg-white/80 p-4 shadow-sm border border-white"
             >
-              {/* Product Image Placeholder */}
-              <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                <div className="text-gray-400 text-6xl">📦</div>
-              </div>
-
-              <div className="p-4">
-                {/* Category Badge */}
-                <span className="inline-block px-2 py-1 text-xs font-medium bg-indigo-100 text-indigo-600 rounded-full mb-2">
-                  {product.category?.name}
-                </span>
-
-                {/* Product Name */}
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {product.name}
-                </h3>
-
-                {/* Description */}
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                  {product.description || 'No description available'}
-                </p>
-
-                {/* Rating */}
-                <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                  <span className="text-xs text-gray-500 ml-1">(4.5)</span>
-                </div>
-
-                {/* Price and Stock */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-2xl font-bold text-gray-900">
-                    GHC {product.price.toFixed(2)}
-                  </span>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      product.stock_quantity > 10
-                        ? 'bg-green-100 text-green-700'
-                        : product.stock_quantity > 0
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {product.stock_quantity > 0
-                      ? `${product.stock_quantity} in stock`
-                      : 'Out of stock'}
-                  </span>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <Link
-                    href={`/shop/products/${product.product_id}`}
-                    className="flex-1 px-4 py-2 border border-indigo-600 text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition text-center"
-                  >
-                    View Details
-                  </Link>
-                  <button
-                    onClick={() => addToCart(product)}
-                    disabled={product.stock_quantity === 0}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              <p className="text-xs uppercase tracking-[0.3em] text-rose-500">{item.label}</p>
+              <p className="text-xl font-bold text-lime-900 mt-1">{item.value}</p>
+              <p className="text-sm text-lime-700 mt-1">{item.detail}</p>
             </div>
           ))}
-        </div>
+        </section> */}
+
+        {/* Categories Filter */}
+        <section className="rounded-3xl bg-white/80 p-6 border border-white shadow-sm">
+          <h2 className="text-xl font-semibold text-lime-900 mb-4">Sip by mood or mix by vibe</h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                selectedCategory === null
+                  ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow'
+                  : 'bg-white text-lime-800 border border-lime-200 hover:border-lime-500'
+              }`}
+            >
+              All products
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.category_id}
+                onClick={() => setSelectedCategory(cat.category_id)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
+                  selectedCategory === cat.category_id
+                    ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow'
+                    : 'bg-white text-lime-800 border border-lime-200 hover:border-lime-500'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Products Grid */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-lime-900">
+              {selectedCategory
+                ? categories.find((c) => c.category_id === selectedCategory)?.name
+                : 'Panaya menu'}
+            </h2>
+            {/* <p className="text-sm text-lime-700">
+              Showing {filteredProducts.length}{' '}
+              {selectedCategory ? 'items in this category' : 'juices and cereal products'}
+            </p> */}
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.product_id}
+                className="rounded-3xl border border-white bg-white/90 p-4 shadow-lg transition hover:-translate-y-1 hover:shadow-rose-100"
+              >
+                <div className="relative h-48 w-full overflow-hidden rounded-2xl bg-lime-50">
+                  {product.image_url ? (
+                    <Image
+                      src={product.image_url}
+                      alt={product.name}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, 100vw"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-5xl">🍹</div>
+                  )}
+                  <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-rose-500">
+                    {product.category?.name || 'Panaya'}
+                  </span>
+                </div>
+                <div className="mt-4 space-y-3">
+                  <h3 className="text-lg font-semibold text-lime-900 line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-lime-700 line-clamp-2">
+                    {product.description || 'Freshly prepared and delivered chilled.'}
+                  </p>
+                  <div className="flex items-center gap-1 text-amber-500">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-current" />
+                    ))}
+                    {/* <span className="text-xs text-amber-700">Panaya Favorite</span> */}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-lime-900">
+                      GHC {product.price.toFixed(2)}
+                    </span>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        product.stock_quantity > 10
+                          ? 'bg-lime-100 text-lime-800'
+                          : product.stock_quantity > 0
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-rose-100 text-rose-700'
+                      }`}
+                    >
+                      {product.stock_quantity > 0
+                        ? `${product.stock_quantity} left`
+                        : 'Sold out'}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/shop/products/${product.product_id}`}
+                      className="flex-1 rounded-full border border-lime-400 px-4 py-2 text-center text-sm font-semibold text-lime-800 transition hover:bg-lime-50"
+                    >
+                      Details
+                    </Link>
+                    <button
+                      onClick={() => addToCart(product)}
+                      disabled={product.stock_quantity === 0}
+                      className="flex items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-2 text-sm font-semibold text-white shadow disabled:cursor-not-allowed disabled:bg-gray-300"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
         {filteredProducts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No products found in this category.</p>
+            <p className="text-lime-700 text-lg">
+              {normalizedSearchTerm
+                ? `No products match "${rawSearchTerm}".`
+                : 'No items in this category today.'}
+            </p>
           </div>
         )}
-      </div>
+    </section>
     </div>
+  </div>
   );
 }

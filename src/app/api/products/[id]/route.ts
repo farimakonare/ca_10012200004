@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { deleteProductCascade } from "@/lib/productCleanup";
 
 type Params = { params: { id: string } };
 
@@ -31,6 +32,15 @@ export async function PUT(req: Request, { params }: Params) {
 
 // Delete product
 export async function DELETE(_req: Request, { params }: Params) {
-  await prisma.product.delete({ where: { product_id: Number(params.id) } });
-  return NextResponse.json({ message: "Product deleted successfully" });
+  const productId = Number(params.id);
+  try {
+    await deleteProductCascade(productId);
+    return NextResponse.json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return NextResponse.json(
+      { error: "Failed to delete product" },
+      { status: 500 }
+    );
+  }
 }

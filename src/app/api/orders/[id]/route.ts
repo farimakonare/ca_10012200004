@@ -17,7 +17,13 @@ export async function GET(_req: Request, { params }: Params) {
             product: true,
           },
         },
-        shipment: true,
+        shipment: {
+          include: {
+            events: {
+              orderBy: { created_at: "asc" },
+            },
+          },
+        },
         payment: true,
       },
     });

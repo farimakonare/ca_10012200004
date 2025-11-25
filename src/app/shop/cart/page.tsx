@@ -1,9 +1,11 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, Trash2, Plus, Minus } from 'lucide-react';
 import Link from 'next/link';
+import { useNotification } from '@/components/NotificationProvider';
 
 type CartItem = {
   product_id: number;
@@ -11,6 +13,7 @@ type CartItem = {
   price: number;
   quantity: number;
   stock_quantity: number;
+  image_url?: string | null;
 };
 
 export default function SimpleCartPage() {
@@ -18,6 +21,7 @@ export default function SimpleCartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const { notify } = useNotification();
 
   useEffect(() => {
     // Check if user is logged in
@@ -77,7 +81,7 @@ export default function SimpleCartPage() {
         body: JSON.stringify({
           user_id: currentUser.user_id,
           total_amount: total,
-          status: 'pending',
+          status: 'pending_payment',
           order_date: new Date().toISOString(),
         }),
       });
@@ -107,7 +111,7 @@ export default function SimpleCartPage() {
         });
       }
 
-      // Create payment record
+      // Create payment record pending proof
       await fetch('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -115,22 +119,37 @@ export default function SimpleCartPage() {
           order_id: order.order_id,
           user_id: currentUser.user_id,
           payment_date: new Date().toISOString(),
-          payment_method: 'pending',
-          amount: total,
+          payment_method: 'manual_transfer',
+          payment_status: 'pending_payment',
+          total_amount: total,
+          proof_image: null,
+          proof_uploaded_at: null,
+          proof_reviewed_at: null,
         }),
       });
 
       // Create shipment record
-      await fetch('/api/shipments', {
+      const shipmentRes = await fetch('/api/shipments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           order_id: order.order_id,
           shipment_date: new Date().toISOString(),
           delivery_date: null,
-          status: 'pending',
+          status: 'pending_payment',
           tracking_number: `TRK${Date.now()}`,
           carrier: 'Standard Delivery',
+        }),
+      });
+      const shipment = await shipmentRes.json();
+
+      await fetch('/api/shipment-events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shipment_id: shipment.shipment_id,
+          status: 'pending_payment',
+          note: 'Pending payment confirmation',
         }),
       });
 
@@ -138,16 +157,18 @@ export default function SimpleCartPage() {
       localStorage.removeItem('cart');
       setCartItems([]);
 
-      // Show success message
-      alert(
-        `Order #${order.order_id} placed successfully! Total: GHC ${total.toFixed(2)}\n\nYour order has been sent to admin for processing.`
-      );
+      await notify({
+        title: 'Order placed',
+        message: `Order #${order.order_id} created. Upload your payment proof to continue.`,
+      });
 
-      // Redirect to shop
-      router.push('/shop');
+      router.push(`/shop/payments/${order.order_id}`);
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Failed to place order. Please try again.');
+      notify({
+        title: 'Order failed',
+        message: 'Failed to place order. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -201,9 +222,20 @@ export default function SimpleCartPage() {
                   index !== cartItems.length - 1 ? 'border-b border-gray-200' : ''
                 }`}
               >
-                {/* Product Image Placeholder */}
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-3xl">📦</span>
+                {/* Product Image */}
+                <div className="w-24 h-24 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                  {item.image_url ? (
+                    <Image
+                      src={item.image_url}
+                      alt={item.name}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <span className="text-3xl text-gray-300">📦</span>
+                  )}
                 </div>
 
                 {/* Product Info */}

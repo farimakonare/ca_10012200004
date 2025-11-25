@@ -6,7 +6,16 @@ type Params = { params: { id: string } };
 export async function GET(_req: Request, { params }: Params) {
   const shipment = await prisma.shipment.findUnique({
     where: { shipment_id: Number(params.id) },
-    include: { order: true },
+    include: {
+      order: {
+        include: {
+          user: true,
+        },
+      },
+      events: {
+        orderBy: { created_at: 'asc' },
+      },
+    },
   });
   if (!shipment) return NextResponse.json({ error: "Shipment not found" }, { status: 404 });
   return NextResponse.json(shipment);
