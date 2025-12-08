@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CreditCard } from 'lucide-react';
 import { useNotification } from '@/components/NotificationProvider';
 
@@ -46,11 +46,7 @@ export default function AdminPaymentsPage() {
   const [paymentPage, setPaymentPage] = useState(1);
   const [paymentsPerPage, setPaymentsPerPage] = useState(10);
 
-  useEffect(() => {
-    fetchPayments();
-  }, []);
-
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/payments', { cache: 'no-store' });
@@ -62,7 +58,11 @@ export default function AdminPaymentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notify]);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
 
   const handleApprove = async (payment: PaymentRecord) => {
     try {
@@ -87,7 +87,7 @@ export default function AdminPaymentsPage() {
         });
       }
       await notify({ title: 'Payment approved', message: `Order #${payment.order_id} marked paid.` });
-      fetchPayments();
+      await fetchPayments();
     } catch (error) {
       console.error(error);
       notify({ title: 'Action failed', message: 'Unable to approve payment.' });
@@ -114,7 +114,7 @@ export default function AdminPaymentsPage() {
         title: 'Proof requested',
         message: `Customer notified to re-upload receipt for order #${payment.order_id}.`,
       });
-      fetchPayments();
+      await fetchPayments();
     } catch (error) {
       console.error(error);
       notify({ title: 'Action failed', message: 'Unable to update payment.' });

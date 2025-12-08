@@ -6,20 +6,14 @@ import { useRouter } from 'next/navigation';
 import { ShoppingBag, Trash2, Plus, Minus } from 'lucide-react';
 import Link from 'next/link';
 import { useNotification } from '@/components/NotificationProvider';
+import { Shopper, StoredCartItem } from '@/types/models';
 
-type CartItem = {
-  product_id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  stock_quantity: number;
-  image_url?: string | null;
-};
+type CartItem = StoredCartItem;
 
 export default function SimpleCartPage() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<Shopper | null>(null);
   const [loading, setLoading] = useState(false);
   const { notify } = useNotification();
 
@@ -33,12 +27,12 @@ export default function SimpleCartPage() {
       return;
     }
 
-    setCurrentUser(JSON.parse(userStr));
+    setCurrentUser(JSON.parse(userStr) as Shopper);
 
     // Load cart from localStorage
     const cartStr = localStorage.getItem('cart');
     if (cartStr) {
-      setCartItems(JSON.parse(cartStr));
+      setCartItems(JSON.parse(cartStr) as CartItem[]);
     }
   }, [router]);
 
@@ -70,9 +64,8 @@ export default function SimpleCartPage() {
         (sum, item) => sum + item.price * item.quantity,
         0
       );
-      const tax = subtotal * 0.1;
-      const shipping = 5.0;
-      const total = subtotal + tax + shipping;
+      const shipping = cartItems.length > 0 ? 5.0 : 0;
+      const total = subtotal + shipping;
 
       // Create order
       const orderRes = await fetch('/api/orders', {
@@ -186,9 +179,8 @@ export default function SimpleCartPage() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const tax = subtotal * 0.1;
   const shipping = cartItems.length > 0 ? 5.0 : 0;
-  const total = subtotal + tax + shipping;
+  const total = subtotal + shipping;
 
   if (cartItems.length === 0) {
     return (

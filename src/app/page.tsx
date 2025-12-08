@@ -39,12 +39,6 @@ const processSteps = [
   },
 ];
 
-const quickStats = [
-  { label: 'Farm partners', value: '45', accent: 'from Volta to Northern Ghana' },
-  { label: 'Weekly bottles', value: '1,200+', accent: 'small, vibrant batches' },
-  { label: 'Average ingredients', value: '4', accent: 'no syrups, no preservatives' },
-];
-
 const vibeTiles = [
   {
     title: 'Taste the garden path',

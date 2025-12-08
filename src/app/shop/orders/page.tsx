@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Package, CreditCard, Truck, Upload } from 'lucide-react';
 import { useNotification } from '@/components/NotificationProvider';
+import { Shopper } from '@/types/models';
 
 type OrderItem = {
   order_item_id: number;
@@ -140,7 +141,7 @@ const SHIPMENT_STATUS_OPTIONS = ['preparing_shipment', 'in_transit', 'delivered'
 export default function CustomerOrdersPage() {
   const router = useRouter();
   const { notify } = useNotification();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<Shopper | null>(null);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>('orders');
@@ -157,19 +158,7 @@ export default function CustomerOrdersPage() {
   const [paymentsPerPage, setPaymentsPerPage] = useState(5);
   const [shipmentsPerPage, setShipmentsPerPage] = useState(5);
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('currentUser');
-    if (!userStr) {
-      localStorage.setItem('redirectAfterLogin', '/shop/orders');
-      router.push('/shop/login');
-      return;
-    }
-    const user = JSON.parse(userStr);
-    setCurrentUser(user);
-    fetchOrders(user.user_id);
-  }, [router]);
-
-  const fetchOrders = async (userId: number) => {
+  const fetchOrders = useCallback(async (userId: number) => {
     setLoading(true);
     try {
       const res = await fetch(`/api/orders?userId=${userId}`, { cache: 'no-store' });
@@ -185,7 +174,19 @@ export default function CustomerOrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notify]);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
+      localStorage.setItem('redirectAfterLogin', '/shop/orders');
+      router.push('/shop/login');
+      return;
+    }
+    const user = JSON.parse(userStr) as Shopper;
+    setCurrentUser(user);
+    fetchOrders(user.user_id);
+  }, [router, fetchOrders]);
 
   const paymentQueue = useMemo(() => {
     return orders.filter(

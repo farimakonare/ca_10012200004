@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Package, Eye, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Package, Eye } from 'lucide-react';
 import Link from 'next/link';
 
 type Order = {
@@ -31,11 +31,7 @@ export default function UserOrdersPage() {
   const [showModal, setShowModal] = useState(false);
   const [userId] = useState(1); // TODO: Get from auth context
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/orders');
@@ -53,7 +49,11 @@ export default function UserOrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const handleViewDetails = (order: Order) => {
     setSelectedOrder(order);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Truck } from 'lucide-react';
 import { useNotification } from '@/components/NotificationProvider';
 
@@ -55,10 +55,6 @@ export default function AdminShipmentsPage() {
   const [shipmentsPerPage, setShipmentsPerPage] = useState(8);
 
   useEffect(() => {
-    fetchShipments();
-  }, []);
-
-  useEffect(() => {
     const initial: Record<number, FormValues> = {};
     shipments.forEach((shipment) => {
       initial[shipment.shipment_id] = {
@@ -71,7 +67,7 @@ export default function AdminShipmentsPage() {
     setFormState(initial);
   }, [shipments]);
 
-  const fetchShipments = async () => {
+  const fetchShipments = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/shipments', { cache: 'no-store' });
@@ -83,7 +79,11 @@ export default function AdminShipmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notify]);
+
+  useEffect(() => {
+    fetchShipments();
+  }, [fetchShipments]);
 
   const handleFieldChange = (shipmentId: number, field: keyof FormValues, value: string) => {
     if (field === 'status') {

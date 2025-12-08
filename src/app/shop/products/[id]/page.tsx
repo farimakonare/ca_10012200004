@@ -1,10 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ShoppingCart, Star, ArrowLeft, Minus, Plus } from 'lucide-react';
 import { useNotification } from '@/components/NotificationProvider';
+import { StoredCartItem } from '@/types/models';
 
 type Product = {
   product_id: number;
@@ -31,13 +32,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
 
-  useEffect(() => {
-    if (params.id) {
-      fetchProduct();
-    }
-  }, [params.id]);
-
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/products/${params.id}`);
@@ -48,7 +43,13 @@ export default function ProductDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    if (params.id) {
+      fetchProduct();
+    }
+  }, [params.id, fetchProduct]);
 
   const addToCart = async () => {
     if (!product) return;
@@ -67,11 +68,11 @@ export default function ProductDetailPage() {
 
     // Get existing cart
     const cartStr = localStorage.getItem('cart');
-    const cart = cartStr ? JSON.parse(cartStr) : [];
+    const cart: StoredCartItem[] = cartStr ? JSON.parse(cartStr) : [];
 
     // Check if product already in cart
     const existingIndex = cart.findIndex(
-      (item: any) => item.product_id === product.product_id
+      (item) => item.product_id === product.product_id
     );
 
     if (existingIndex >= 0) {

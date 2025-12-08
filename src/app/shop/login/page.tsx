@@ -5,6 +5,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, MapPin, Phone } from 'lucide-react';
 import { useNotification } from '@/components/NotificationProvider';
+import { Shopper } from '@/types/models';
+
+type PublicUser = Shopper & {
+  orders?: number;
+  totalSpent?: number;
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,9 +32,9 @@ export default function LoginPage() {
       if (isLogin) {
         // Login - Find user by email and password
         const res = await fetch('/api/users');
-        const users = await res.json();
+        const users: PublicUser[] = await res.json();
         const user = users.find(
-          (u: any) =>
+          (u) =>
             u.user_email === formData.user_email &&
             u.role === 'customer' // Only allow customers to login on storefront
         );
