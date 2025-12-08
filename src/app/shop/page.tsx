@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ShoppingCart, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useNotification } from '@/components/NotificationProvider';
+import { StoredCartItem } from '@/types/models';
 
 type Product = {
   product_id: number;
@@ -78,11 +79,11 @@ export default function HomePage() {
 
     // User is logged in - add to cart
     const cartStr = localStorage.getItem('cart');
-    const cart = cartStr ? JSON.parse(cartStr) : [];
+    const cart: StoredCartItem[] = cartStr ? JSON.parse(cartStr) : [];
 
     // Check if product already in cart
     const existingIndex = cart.findIndex(
-      (item: any) => item.product_id === product.product_id
+      (item) => item.product_id === product.product_id
     );
 
     if (existingIndex >= 0) {

@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     }
 
     const { user_password: _userPassword, ...safeAdmin } = admin;
+    void _userPassword;
 
     return NextResponse.json(safeAdmin);
   } catch (error) {

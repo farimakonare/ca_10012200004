@@ -1,11 +1,19 @@
-// Add this helper file: lib/cartHelpers.ts
+import { CartSummary } from '@/types/models';
+
+type CartWithItems = CartSummary & {
+  cartItems?: Array<{
+    cart_item_id: number;
+    product_id: number;
+    quantity: number;
+  }>;
+};
 
 export async function addToCart(userId: number, productId: number, quantity: number = 1) {
   try {
     // Get or create cart for user
     const cartsRes = await fetch('/api/cart');
-    const carts = await cartsRes.json();
-    let userCart = carts.find((c: any) => c.user_id === userId);
+    const carts: CartSummary[] = await cartsRes.json();
+    let userCart = carts.find((c) => c.user_id === userId);
 
     if (!userCart) {
       // Create cart if doesn't exist
@@ -19,9 +27,9 @@ export async function addToCart(userId: number, productId: number, quantity: num
 
     // Check if product already in cart
     const cartRes = await fetch(`/api/cart/${userCart.cart_id}`);
-    const cartData = await cartRes.json();
+    const cartData: CartWithItems = await cartRes.json();
     const existingItem = cartData.cartItems?.find(
-      (item: any) => item.product_id === productId
+      (item) => item.product_id === productId
     );
 
     if (existingItem) {
@@ -56,16 +64,16 @@ export async function addToCart(userId: number, productId: number, quantity: num
 export async function getCartItemCount(userId: number): Promise<number> {
   try {
     const cartsRes = await fetch('/api/cart');
-    const carts = await cartsRes.json();
-    const userCart = carts.find((c: any) => c.user_id === userId);
+    const carts: CartSummary[] = await cartsRes.json();
+    const userCart = carts.find((c) => c.user_id === userId);
 
     if (!userCart) return 0;
 
     const cartRes = await fetch(`/api/cart/${userCart.cart_id}`);
-    const cartData = await cartRes.json();
+    const cartData: CartWithItems = await cartRes.json();
     
     return cartData.cartItems?.reduce(
-      (total: number, item: any) => total + item.quantity,
+      (total: number, item) => total + item.quantity,
       0
     ) || 0;
   } catch (error) {

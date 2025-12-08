@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ShoppingCart, User, Search, Home, LogOut, Package } from 'lucide-react';
 import { useState, useEffect, FormEvent } from 'react';
 import { useNotification } from '@/components/NotificationProvider';
+import { Shopper, StoredCartItem } from '@/types/models';
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -13,7 +14,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   const searchParams = useSearchParams();
   const { confirm } = useNotification();
   const [cartCount, setCartCount] = useState(0);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<Shopper | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -21,7 +22,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
     // Check if user is logged in
     const userStr = localStorage.getItem('currentUser');
     if (userStr) {
-      setCurrentUser(JSON.parse(userStr));
+      setCurrentUser(JSON.parse(userStr) as Shopper);
     }
 
     // Update cart count
@@ -32,7 +33,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       updateCartCount();
       const userStr = localStorage.getItem('currentUser');
       if (userStr) {
-        setCurrentUser(JSON.parse(userStr));
+        setCurrentUser(JSON.parse(userStr) as Shopper);
       } else {
         setCurrentUser(null);
       }
@@ -57,8 +58,8 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   const updateCartCount = () => {
     const cartStr = localStorage.getItem('cart');
     if (cartStr) {
-      const cart = JSON.parse(cartStr);
-      const count = cart.reduce((total: number, item: any) => total + item.quantity, 0);
+      const cart = JSON.parse(cartStr) as StoredCartItem[];
+      const count = cart.reduce((total: number, item: StoredCartItem) => total + item.quantity, 0);
       setCartCount(count);
     } else {
       setCartCount(0);
