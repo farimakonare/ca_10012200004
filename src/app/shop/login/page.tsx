@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, MapPin } from 'lucide-react';
+import { User, Mail, Lock, MapPin, Phone } from 'lucide-react';
 import { useNotification } from '@/components/NotificationProvider';
 
 export default function LoginPage() {
@@ -15,6 +16,7 @@ export default function LoginPage() {
     user_email: '',
     user_password: '',
     user_address: '',
+    user_phone: '',
   });
 
   const handleSubmit = async () => {
@@ -32,8 +34,28 @@ export default function LoginPage() {
         );
 
         if (user) {
+          let userToStore = user;
+
+          if (formData.user_phone.trim() && formData.user_phone !== user.user_phone) {
+            try {
+              const updateRes = await fetch(`/api/users/${user.user_id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_phone: formData.user_phone.trim() }),
+              });
+
+              if (updateRes.ok) {
+                userToStore = await updateRes.json();
+              } else {
+                userToStore = { ...user, user_phone: formData.user_phone.trim() };
+              }
+            } catch (updateError) {
+              console.error('Error updating phone:', updateError);
+            }
+          }
+
           // Store user in localStorage for session
-          localStorage.setItem('currentUser', JSON.stringify(user));
+          localStorage.setItem('currentUser', JSON.stringify(userToStore));
           
           // Check if there's a redirect URL (from cart)
           const redirectUrl = localStorage.getItem('redirectAfterLogin');
@@ -90,13 +112,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-sand-50 via-brand-50 to-leaf-50 flex items-center justify-center px-4 py-8">
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4">
-            <span className="text-white font-bold text-2xl">Cz</span>
-          </div>
+          {/* <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl mb-4 shadow">
+            <div className="relative h-12 w-12">
+              <Image src="/panaya-logo.jpeg" alt="Panaya" fill className="rounded-xl object-cover" priority />
+            </div>
+          </div> */}
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
@@ -125,7 +149,7 @@ export default function LoginPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, user_name: e.target.value })
                     }
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -146,8 +170,28 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, user_email: e.target.value })
                   }
-                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder="Enter your email"
+                />
+              </div>
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number {isLogin ? '*' : '*'}
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  required={!isLogin}
+                  value={formData.user_phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, user_phone: e.target.value })
+                  }
+                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+                  placeholder="+233 00 000 0000"
                 />
               </div>
             </div>
@@ -166,7 +210,7 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, user_password: e.target.value })
                   }
-                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                   placeholder="Enter your password"
                 />
               </div>
@@ -186,7 +230,7 @@ export default function LoginPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, user_address: e.target.value })
                     }
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent"
+                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
                     placeholder="Enter your address (optional)"
                   />
                 </div>
@@ -197,7 +241,7 @@ export default function LoginPage() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {loading
                 ? 'Please wait...'
@@ -217,9 +261,10 @@ export default function LoginPage() {
                   user_email: '',
                   user_password: '',
                   user_address: '',
+                  user_phone: '',
                 });
               }}
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
+              className="text-brand-600 hover:text-brand-700 font-medium"
             >
               {isLogin
                 ? "Don't have an account? Register"

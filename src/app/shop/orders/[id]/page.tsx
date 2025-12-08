@@ -63,7 +63,7 @@ export default function UserOrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-leaf-100 text-leaf-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       case 'processing':
@@ -80,7 +80,7 @@ export default function UserOrdersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -99,7 +99,7 @@ export default function UserOrdersPage() {
           <p className="text-gray-600 mb-6">Start shopping to create your first order!</p>
           <Link
             href="/"
-            className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
+            className="inline-block px-6 py-3 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 transition"
           >
             Start Shopping
           </Link>
@@ -141,7 +141,7 @@ export default function UserOrdersPage() {
 
                     <div>
                       <span className="text-gray-600">Total: </span>
-                      <span className="font-bold text-indigo-600">
+                      <span className="font-bold text-brand-600">
                         GHC {order.total_amount.toFixed(2)}
                       </span>
                     </div>
@@ -170,7 +170,7 @@ export default function UserOrdersPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleViewDetails(order)}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium"
+                    className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition font-medium"
                   >
                     <Eye className="w-4 h-4" />
                     View Details
@@ -268,7 +268,7 @@ export default function UserOrdersPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between pb-2 border-b border-gray-200">
                     <span className="text-gray-600">Total Amount:</span>
-                    <span className="font-bold text-indigo-600 text-lg">
+                    <span className="font-bold text-brand-600 text-lg">
                       GHC {selectedOrder.total_amount.toFixed(2)}
                     </span>
                   </div>
@@ -285,7 +285,7 @@ export default function UserOrdersPage() {
               </button>
               <Link
                 href={`/order-confirmation/${selectedOrder.order_id}`}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium text-center"
+                className="flex-1 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition font-medium text-center"
               >
                 View Full Details
               </Link>

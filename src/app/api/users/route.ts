@@ -24,6 +24,8 @@ export async function GET() {
       user_id: user.user_id,
       user_name: user.user_name,
       user_email: user.user_email,
+      user_address: user.user_address,
+      user_phone: user.user_phone,
       role: user.role,
       orders: user._count.orders,
       totalSpent: user.orders.reduce((sum, order) => sum + order.total_amount, 0),

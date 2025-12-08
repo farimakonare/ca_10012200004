@@ -1,11 +1,18 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from 'react';
 
 type NotifyOptions = {
   title?: string;
   message: string;
-  confirmText?: string;
+  durationMs?: number;
 };
 
 type ConfirmOptions = {
@@ -15,19 +22,18 @@ type ConfirmOptions = {
   cancelText?: string;
 };
 
-type ModalConfig =
-  | ({
-      variant: 'info';
-    } & Required<Pick<NotifyOptions, 'message'>> &
-    Pick<NotifyOptions, 'title' | 'confirmText'>)
-  | ({
-      variant: 'confirm';
-    } & Required<Pick<ConfirmOptions, 'message'>> &
-    Pick<ConfirmOptions, 'title' | 'confirmText' | 'cancelText'>);
+type ToastConfig = {
+  id: string;
+  title?: string;
+  message: string;
+};
 
-type Resolver =
-  | { variant: 'info'; resolve: () => void }
-  | { variant: 'confirm'; resolve: (value: boolean) => void };
+type ConfirmState = {
+  title?: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+};
 
 type NotificationContextValue = {
   notify: (options: NotifyOptions) => Promise<void>;
@@ -37,116 +43,119 @@ type NotificationContextValue = {
 const NotificationContext = createContext<NotificationContextValue | null>(null);
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<ModalConfig | null>(null);
-  const [resolver, setResolver] = useState<Resolver | null>(null);
+  const [toasts, setToasts] = useState<ToastConfig[]>([]);
+  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+  const [confirmResolver, setConfirmResolver] = useState<
+    ((value: boolean) => void) | null
+  >(null);
 
-  const closeModal = () => {
-    setConfig(null);
-    setResolver(null);
-  };
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
 
-  const notify = async ({
-    title = 'Heads up',
-    message,
-    confirmText = 'Got it',
-  }: NotifyOptions) => {
-    return new Promise<void>((resolve) => {
-      setConfig({
-        variant: 'info',
-        title,
-        message,
-        confirmText,
-      });
-      setResolver({ variant: 'info', resolve });
-    });
-  };
+  const notify = useCallback(
+    ({ title, message, durationMs = 3500 }: NotifyOptions): Promise<void> => {
+      const id =
+        typeof window !== 'undefined' && window.crypto?.randomUUID
+          ? window.crypto.randomUUID()
+          : Math.random().toString(36).slice(2);
 
-  const confirm = async ({
-    title = 'Are you sure?',
-    message,
-    confirmText = 'Confirm',
-    cancelText = 'Cancel',
-  }: ConfirmOptions) => {
-    return new Promise<boolean>((resolve) => {
-      setConfig({
-        variant: 'confirm',
-        title,
-        message,
-        confirmText,
-        cancelText,
-      });
-      setResolver({ variant: 'confirm', resolve });
-    });
-  };
+      setToasts((prev) => [...prev, { id, title, message }]);
+
+      if (typeof window !== 'undefined') {
+        window.setTimeout(() => removeToast(id), durationMs);
+      }
+
+      return Promise.resolve();
+    },
+    [removeToast]
+  );
+
+  const confirm = useCallback(
+    ({
+      title = 'Are you sure?',
+      message,
+      confirmText = 'Confirm',
+      cancelText = 'Cancel',
+    }: ConfirmOptions) =>
+      new Promise<boolean>((resolve) => {
+        setConfirmState({ title, message, confirmText, cancelText });
+        setConfirmResolver(() => resolve);
+      }),
+    []
+  );
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (!config) return;
-      if (event.key === 'Escape') {
-        if (resolver?.variant === 'confirm') {
-          resolver.resolve(false);
-        } else if (resolver?.variant === 'info') {
-          resolver.resolve();
-        }
-        closeModal();
+      if (event.key === 'Escape' && confirmState) {
+        confirmResolver?.(false);
+        setConfirmState(null);
+        setConfirmResolver(null);
       }
     };
 
-    if (config) {
+    if (confirmState) {
       document.addEventListener('keydown', handleKey);
     }
     return () => {
       document.removeEventListener('keydown', handleKey);
     };
-  }, [config, resolver]);
+  }, [confirmState, confirmResolver]);
 
-  const handlePrimary = () => {
-    if (resolver?.variant === 'confirm') {
-      resolver.resolve(true);
-    } else if (resolver?.variant === 'info') {
-      resolver.resolve();
-    }
-    closeModal();
-  };
-
-  const handleSecondary = () => {
-    if (resolver?.variant === 'confirm') {
-      resolver.resolve(false);
-    } else if (resolver?.variant === 'info') {
-      resolver?.resolve();
-    }
-    closeModal();
+  const handleConfirm = (value: boolean) => {
+    confirmResolver?.(value);
+    setConfirmState(null);
+    setConfirmResolver(null);
   };
 
   return (
     <NotificationContext.Provider value={{ notify, confirm }}>
       {children}
-      {config && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4">
+
+      {/* Toasts */}
+      <div className="fixed top-4 right-4 z-[1000] flex flex-col gap-3">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className="w-80 rounded-2xl border border-sand-200 bg-white/90 p-4 shadow-lg backdrop-blur-sm"
+          >
+            {toast.title && (
+              <p className="text-sm font-semibold text-gray-900">{toast.title}</p>
+            )}
+            <p className="text-sm text-gray-600 mt-1">{toast.message}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Confirm Modal */}
+      {confirmState && (
+        <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/50 px-4">
           <div
             className="absolute inset-0"
             aria-hidden="true"
-            onClick={handleSecondary}
+            onClick={() => handleConfirm(false)}
           />
-          <div className="relative z-[1001] w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            {config.title && (
-              <h2 className="text-lg font-semibold text-gray-900">{config.title}</h2>
+          <div className="relative z-[1051] w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            {confirmState.title && (
+              <h2 className="text-lg font-semibold text-gray-900">
+                {confirmState.title}
+              </h2>
             )}
-            <p className="mt-3 text-sm text-gray-600 whitespace-pre-line">{config.message}</p>
+            <p className="mt-3 text-sm text-gray-600 whitespace-pre-line">
+              {confirmState.message}
+            </p>
             <div className="mt-6 flex justify-end gap-3">
-              {config.variant === 'confirm' && (
-                <button
-                  onClick={handleSecondary}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  {config.cancelText || 'Cancel'}
-                </button>
-              )}
               <button
-                onClick={handlePrimary}
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                onClick={() => handleConfirm(false)}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                {config.confirmText || 'OK'}
+                {confirmState.cancelText || 'Cancel'}
+              </button>
+              <button
+                onClick={() => handleConfirm(true)}
+                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+              >
+                {confirmState.confirmText || 'Confirm'}
               </button>
             </div>
           </div>

@@ -5,6 +5,7 @@ CREATE TABLE "User" (
     "user_password" TEXT NOT NULL,
     "user_email" TEXT NOT NULL,
     "user_address" TEXT,
+    "user_phone" TEXT,
     "role" TEXT NOT NULL DEFAULT 'customer'
 );
 
@@ -15,6 +16,7 @@ CREATE TABLE "Product" (
     "description" TEXT,
     "price" REAL NOT NULL,
     "stock_quantity" INTEGER NOT NULL,
+    "image_url" TEXT,
     "category_id" INTEGER NOT NULL,
     CONSTRAINT "Product_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category" ("category_id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -51,8 +53,21 @@ CREATE TABLE "Shipment" (
     "shipment_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "order_id" INTEGER NOT NULL,
     "shipment_date" DATETIME NOT NULL,
+    "delivery_date" DATETIME,
     "status" TEXT NOT NULL,
+    "tracking_number" TEXT,
+    "carrier" TEXT,
     CONSTRAINT "Shipment_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "Order" ("order_id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "ShipmentEvent" (
+    "event_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "shipment_id" INTEGER NOT NULL,
+    "status" TEXT NOT NULL,
+    "note" TEXT,
+    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ShipmentEvent_shipment_id_fkey" FOREIGN KEY ("shipment_id") REFERENCES "Shipment" ("shipment_id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -64,6 +79,9 @@ CREATE TABLE "Payment" (
     "payment_method" TEXT NOT NULL,
     "payment_status" TEXT NOT NULL,
     "total_amount" REAL NOT NULL,
+    "proof_image" TEXT,
+    "proof_uploaded_at" DATETIME,
+    "proof_reviewed_at" DATETIME,
     CONSTRAINT "Payment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User" ("user_id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Payment_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "Order" ("order_id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -101,6 +119,9 @@ CREATE UNIQUE INDEX "User_user_email_key" ON "User"("user_email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Shipment_order_id_key" ON "Shipment"("order_id");
+
+-- CreateIndex
+CREATE INDEX "ShipmentEvent_shipment_id_idx" ON "ShipmentEvent"("shipment_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Payment_order_id_key" ON "Payment"("order_id");

@@ -24,9 +24,9 @@ type Category = {
 type ProductForm = {
   name: string;
   description: string;
-  price: number;
-  stock_quantity: number;
-  category_id: number;
+  price: string;
+  stock_quantity: string;
+  category_id: string;
   image_url: string;
 };
 
@@ -45,9 +45,9 @@ export default function ProductsPage() {
   const [formData, setFormData] = useState<ProductForm>({
     name: '',
     description: '',
-    price: 0,
-    stock_quantity: 0,
-    category_id: 0,
+    price: '',
+    stock_quantity: '',
+    category_id: '',
     image_url: '',
   });
   const [isProcessingImage, setIsProcessingImage] = useState(false);
@@ -79,9 +79,9 @@ export default function ProductsPage() {
     setFormData({
       name: product.name,
       description: product.description || '',
-      price: product.price,
-      stock_quantity: product.stock_quantity,
-      category_id: product.category_id,
+      price: product.price.toString(),
+      stock_quantity: product.stock_quantity.toString(),
+      category_id: product.category_id.toString(),
       image_url: product.image_url || '',
     });
     setShowModal(true);
@@ -118,7 +118,11 @@ export default function ProductsPage() {
         : '/api/products';
       const method = editProduct ? 'PUT' : 'POST';
       const payload = {
-        ...formData,
+        name: formData.name,
+        description: formData.description || null,
+        price: parseFloat(formData.price || '0'),
+        stock_quantity: parseInt(formData.stock_quantity || '0', 10),
+        category_id: parseInt(formData.category_id || '0', 10),
         image_url: formData.image_url || null,
       };
 
@@ -133,9 +137,9 @@ export default function ProductsPage() {
       setFormData({
         name: '',
         description: '',
-        price: 0,
-        stock_quantity: 0,
-        category_id: 0,
+        price: '',
+        stock_quantity: '',
+        category_id: '',
         image_url: '',
       });
       fetchData();
@@ -207,7 +211,7 @@ export default function ProductsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -222,14 +226,14 @@ export default function ProductsPage() {
             setFormData({
               name: '',
               description: '',
-              price: 0,
-              stock_quantity: 0,
-              category_id: 0,
+              price: '',
+              stock_quantity: '',
+              category_id: '',
               image_url: '',
             });
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
         >
           <Plus className="w-5 h-5" />
           Add Product
@@ -242,14 +246,14 @@ export default function ProductsPage() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search by name, description, or ID"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
         <select
           value={categoryFilter}
           onChange={(e) =>
             setCategoryFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))
           }
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         >
           <option value="all">All categories</option>
           {categories.map((category) => (
@@ -265,7 +269,7 @@ export default function ProductsPage() {
               e.target.value as 'all' | 'in_stock' | 'low_stock' | 'out_of_stock'
             )
           }
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         >
           <option value="all">All stock levels</option>
           <option value="in_stock">Healthy stock (&gt; 10)</option>
@@ -332,7 +336,7 @@ export default function ProductsPage() {
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
                         product.stock_quantity > 10
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-leaf-100 text-leaf-800'
                           : product.stock_quantity > 0
                           ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-red-100 text-red-800'
@@ -347,7 +351,7 @@ export default function ProductsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                     <button
                       onClick={() => handleEdit(product)}
-                      className="text-indigo-600 hover:text-indigo-900 inline-flex items-center gap-1"
+                      className="text-brand-600 hover:text-brand-900 inline-flex items-center gap-1"
                     >
                       <Edit className="w-4 h-4" />
                       Edit
@@ -388,7 +392,7 @@ export default function ProductsPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
@@ -399,7 +403,7 @@ export default function ProductsPage() {
                   Description
                 </label>
                 <textarea
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
@@ -455,9 +459,9 @@ export default function ProductsPage() {
                 <input
                   type="number"
                   step="0.01"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   required
                 />
               </div>
@@ -467,10 +471,10 @@ export default function ProductsPage() {
                 </label>
                 <input
                   type="number"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.stock_quantity}
                   onChange={(e) =>
-                    setFormData({ ...formData, stock_quantity: parseInt(e.target.value) })
+                    setFormData({ ...formData, stock_quantity: e.target.value })
                   }
                   required
                 />
@@ -478,10 +482,10 @@ export default function ProductsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.category_id}
                   onChange={(e) =>
-                    setFormData({ ...formData, category_id: parseInt(e.target.value) })
+                    setFormData({ ...formData, category_id: e.target.value })
                   }
                   required
                 >
@@ -506,7 +510,7 @@ export default function ProductsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
                 >
                   {editProduct ? 'Update' : 'Create'}
                 </button>

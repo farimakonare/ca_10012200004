@@ -19,7 +19,7 @@ type ShipmentRecord = {
   tracking_number: string | null;
   carrier: string | null;
   order?: {
-    user?: { user_name: string; user_email: string } | null;
+    user?: { user_name: string; user_email: string; user_phone?: string | null } | null;
   } | null;
   events?: ShipmentEvent[];
 };
@@ -196,6 +196,7 @@ export default function AdminShipmentsPage() {
             String(shipment.order_id),
             shipment.order?.user?.user_name ?? '',
             shipment.order?.user?.user_email ?? '',
+            shipment.order?.user?.user_phone ?? '',
           ].some((value) => value.toLowerCase().includes(normalizedSearch))
         : true;
       return shipment.status !== 'pending_payment' && matchesStatus && matchesSearch;
@@ -222,7 +223,7 @@ export default function AdminShipmentsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-80">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -232,7 +233,7 @@ export default function AdminShipmentsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Truck className="w-5 h-5 text-indigo-500" />
+            <Truck className="w-5 h-5 text-brand-500" />
             Shipments
           </h1>
           <p className="text-gray-600 mt-1">Track and update delivery progress.</p>
@@ -249,12 +250,12 @@ export default function AdminShipmentsPage() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search shipment/order/customer"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         >
           <option value="all">All shipment statuses</option>
           {statusOptions.map((status) => (
@@ -263,10 +264,10 @@ export default function AdminShipmentsPage() {
             </option>
           ))}
         </select>
-        <div className="flex items-center justify-end text-sm text-gray-500">
+        {/* <div className="flex items-center justify-end text-sm text-gray-500">
           Showing {filteredShipments.length} of {shipments.length} shipments • Updated{' '}
           {new Date().toLocaleTimeString()}
-        </div>
+        </div> */}
       </div>
 
       <div className="space-y-4">
@@ -294,8 +295,13 @@ export default function AdminShipmentsPage() {
                     {shipment.order?.user?.user_name || 'Unknown customer'} •{' '}
                     {shipment.order?.user?.user_email}
                   </p>
+                  {shipment.order?.user?.user_phone && (
+                    <p className="text-sm text-gray-600">
+                      {shipment.order.user.user_phone}
+                    </p>
+                  )}
                 </div>
-                <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
                   {formatStatus(shipment.status)}
                 </span>
               </div>
@@ -386,7 +392,7 @@ export default function AdminShipmentsPage() {
                   className={`rounded-lg px-4 py-2 text-sm font-semibold text-white ${
                     isLocked
                       ? 'bg-gray-300 cursor-not-allowed'
-                      : 'bg-indigo-600 hover:bg-indigo-700'
+                      : 'bg-brand-600 hover:bg-brand-700'
                   }`}
                 >
                   Save update
@@ -407,7 +413,7 @@ export default function AdminShipmentsPage() {
                   <div className="space-y-3">
                     {events.map((event) => (
                       <div key={event.event_id} className="relative pl-5">
-                        <span className="absolute left-1 top-2 h-2 w-2 rounded-full bg-indigo-500" />
+                        <span className="absolute left-1 top-2 h-2 w-2 rounded-full bg-brand-500" />
                         <p className="text-sm font-semibold text-gray-900">
                           {formatStatus(event.status)}{' '}
                           <span className="ml-2 text-xs font-normal text-gray-500">

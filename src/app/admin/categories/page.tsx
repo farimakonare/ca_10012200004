@@ -90,7 +90,7 @@ export default function CategoriesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -105,7 +105,7 @@ export default function CategoriesPage() {
             setFormData({ name: '' });
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
         >
           <Plus className="w-5 h-5" />
           Add Category
@@ -146,7 +146,7 @@ export default function CategoriesPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                     <button
                       onClick={() => handleEdit(category)}
-                      className="text-indigo-600 hover:text-indigo-900 inline-flex items-center gap-1"
+                      className="text-brand-600 hover:text-brand-900 inline-flex items-center gap-1"
                     >
                       <Edit className="w-4 h-4" />
                       Edit
@@ -180,7 +180,7 @@ export default function CategoriesPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.name}
                   onChange={(e) => setFormData({ name: e.target.value })}
                   required
@@ -199,7 +199,7 @@ export default function CategoriesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
                 >
                   {editCategory ? 'Update' : 'Create'}
                 </button>

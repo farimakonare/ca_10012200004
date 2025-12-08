@@ -60,18 +60,18 @@ const vibeTiles = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 via-rose-50 to-lime-50 text-lime-950">
+    <div className="min-h-screen bg-gradient-to-b from-sand-50 via-brand-50 to-leaf-50 text-leaf-950">
       <div className="mx-auto max-w-6xl px-6 py-16 space-y-20">
         {/* Hero */}
         <section className="grid gap-10 lg:grid-cols-2 lg:items-center">
           <div className="space-y-6">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500 shadow">
+            <p className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-berry-500 shadow">
               Panaya · Natural Fruit Drinks & Cereal Mix
             </p>
-            <h1 className="text-4xl font-extrabold leading-tight text-lime-900 sm:text-5xl">
+            <h1 className="text-4xl font-extrabold leading-tight text-leaf-900 sm:text-5xl">
               Colorful bottles of pure sunshine, freshly pressed by Panaya.
             </h1>
-            <p className="text-lg text-lime-800">
+            <p className="text-lg text-leaf-800">
               Panaya is a natural juice and cereal-mix kitchen in Accra. We buy the freshest fruit
               from open-air markets, blend them the same morning, and bottle juices with zero added
               sugar or preservatives. Pair them with our creamy cereal mix for a wholesome start.
@@ -79,13 +79,13 @@ export default function Home() {
             <div className="flex flex-wrap gap-4">
               <Link
                 href="/shop?search=juice"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-orange-200 transition hover:brightness-110"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-500 via-berry-500 to-leaf-500 px-6 py-3 text-base font-semibold text-white shadow-lg transition hover:brightness-110"
               >
                 Browse natural juices
               </Link>
               <Link
                 href="/shop/orders"
-                className="inline-flex items-center gap-2 rounded-full border border-lime-500 px-6 py-3 text-base font-semibold text-lime-800 hover:bg-lime-50"
+                className="inline-flex items-center gap-2 rounded-full border border-leaf-500 px-6 py-3 text-base font-semibold text-leaf-800 hover:bg-leaf-50/40"
               >
                 Track my bottles
               </Link>
@@ -94,8 +94,8 @@ export default function Home() {
               {quickStats.map((stat) => (
                 <div key={stat.label}>
                   <p className="text-xs uppercase tracking-wide text-gray-500">{stat.label}</p>
-                  <p className="text-lg font-bold text-lime-900">{stat.value}</p>
-                  <p className="text-xs text-lime-700">{stat.accent}</p>
+                  <p className="text-lg font-bold text-leaf-900">{stat.value}</p>
+                  <p className="text-xs text-leaf-700">{stat.accent}</p>
                 </div>
               ))}
             </div> */}
@@ -108,7 +108,7 @@ export default function Home() {
               priority
               className="rounded-3xl object-cover shadow-2xl"
             />
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-rose-500 shadow-lg">
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-berry-500 shadow-lg">
               100% Natural
             </div>
           </div>
@@ -117,13 +117,13 @@ export default function Home() {
         {/* Signature flavors */}
         <section className="space-y-10">
           <div className="flex flex-col items-center text-center space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-rose-500">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-berry-500">
               Signature pours
             </p>
-            <h2 className="text-3xl font-bold text-lime-900">
+            <h2 className="text-3xl font-bold text-leaf-900">
               Pick the bottle that matches your mood.
             </h2>
-            <p className="max-w-3xl text-lg text-lime-800">
+            <p className="max-w-3xl text-lg text-leaf-800">
               We let fruit personality lead the way. Think “sunset on the terrace,” “garden yoga,”
               or “poolside daydream.” Your taste buds will tell you which vibe to choose.
             </p>
@@ -141,12 +141,12 @@ export default function Home() {
                     fill
                     className="object-cover transition-transform duration-300 hover:scale-105"
                   />
-                  <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-rose-500">
+                  <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-berry-500">
                     {flavor.badge}
                   </span>
                 </div>
-                <h3 className="mt-4 text-xl font-semibold text-lime-900">{flavor.title}</h3>
-                <p className="mt-2 text-sm text-lime-700">{flavor.description}</p>
+                <h3 className="mt-4 text-xl font-semibold text-leaf-900">{flavor.title}</h3>
+                <p className="mt-2 text-sm text-leaf-700">{flavor.description}</p>
               </div>
             ))}
           </div>
@@ -155,18 +155,18 @@ export default function Home() {
         {/* Cereal mix highlight */}
         <section className="grid gap-10 lg:grid-cols-2">
           <div className="rounded-3xl border border-white/60 bg-white/80 p-8 shadow-lg">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-600">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-brand-600">
               Panaya cereal mix
             </p>
-            <h2 className="mt-3 text-3xl font-bold text-lime-900">
+            <h2 className="mt-3 text-3xl font-bold text-leaf-900">
               Creamy, nutty, ready-to-enjoy cereal bowls.
             </h2>
-            <p className="mt-4 text-lg text-lime-800">
+            <p className="mt-4 text-lg text-leaf-800">
               Our cereal mix blends toasted grains, groundnuts, tiger nuts, millet, and spices for a hearty
               breakfast or snack. Just add warm water or almond milk, stir, and enjoy with your
               favorite juice.
             </p>
-            <ul className="mt-5 space-y-2 text-sm text-lime-700">
+            <ul className="mt-5 space-y-2 text-sm text-leaf-700">
               <li>• No dairy powders or artificial thickeners.</li>
               <li>• Lightly sweetened with dates—never refined sugar.</li>
               <li>• Packed fresh and sealed for weekly deliveries.</li>
@@ -174,11 +174,11 @@ export default function Home() {
             <div className="mt-6 flex flex-wrap gap-4">
               <Link
                 href="/shop?search=cereal"
-                className="inline-flex items-center gap-2 rounded-full bg-lime-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-lime-500"
+                className="inline-flex items-center gap-2 rounded-full bg-leaf-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:bg-leaf-500"
               >
                 Shop cereal mix
               </Link>
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-berry-500">
                 best paired with fruit juice
               </span>
             </div>
@@ -205,22 +205,22 @@ export default function Home() {
 
         {/* Process */}
         <section className="grid gap-10 lg:grid-cols-2">
-          <div className="space-y-5 rounded-3xl bg-gradient-to-br from-lime-100 via-white to-amber-100 p-8 shadow-lg">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-lime-600">
+          <div className="space-y-5 rounded-3xl bg-gradient-to-br from-leaf-100 via-white to-brand-100 p-8 shadow-lg">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-leaf-600">
               From orchard to bottle
             </p>
-            <h2 className="text-3xl font-bold text-lime-900">
+            <h2 className="text-3xl font-bold text-leaf-900">
               The Panaya ritual keeps every sip vibrant.
             </h2>
             <div className="grid gap-4">
               {processSteps.map((step, index) => (
                 <div key={step.label} className="flex gap-4 rounded-2xl bg-white/80 p-4 shadow-sm">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600 font-semibold">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-berry-100 text-berry-600 font-semibold">
                     {index + 1}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-lime-900">{step.label}</p>
-                    <p className="text-sm text-lime-700">{step.detail}</p>
+                    <p className="text-sm font-semibold text-leaf-900">{step.label}</p>
+                    <p className="text-sm text-leaf-700">{step.detail}</p>
                   </div>
                 </div>
               ))}
@@ -241,23 +241,23 @@ export default function Home() {
         </section>
 
         {/* CTA */}
-        <section className="rounded-3xl border border-white/50 bg-gradient-to-r from-lime-400 via-citrus-300 to-rose-300 p-8 text-lime-900 shadow-xl">
+        <section className="rounded-3xl border border-white/50 bg-gradient-to-r from-leaf-400 via-citrus-300 to-berry-300 p-8 text-leaf-900 shadow-xl">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.3em] text-lime-900/70">
+              <p className="text-sm uppercase tracking-[0.3em] text-leaf-900/70">
                 Your day needs fruit
               </p>
               <h2 className="text-3xl font-extrabold">
                 Keep your fridge stocked with Panaya natural juices.
               </h2>
-              <p className="max-w-2xl text-lg text-lime-900">
+              <p className="max-w-2xl text-lg text-leaf-900">
                 Subscribe for weekly drops, gift a rainbow box, or grab a limited release before it
                 sells out. Each bottle is hand-labeled and delivered chilled.
               </p>
             </div>
             <Link
               href="/shop"
-              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-lime-900 shadow-lg transition hover:scale-105"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-leaf-900 shadow-lg transition hover:scale-105"
             >
               Shop now
               <ArrowRight className="h-4 w-4" />

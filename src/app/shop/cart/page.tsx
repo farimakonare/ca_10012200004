@@ -177,7 +177,7 @@ export default function SimpleCartPage() {
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -199,7 +199,7 @@ export default function SimpleCartPage() {
           <p className="text-gray-600 mb-6">Add some products to get started!</p>
           <Link
             href="/shop"
-            className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
+            className="inline-block px-6 py-3 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 transition"
           >
             Continue Shopping
           </Link>
@@ -298,6 +298,11 @@ export default function SimpleCartPage() {
               <p className="text-sm text-gray-700">
                 <strong>Email:</strong> {currentUser.user_email}
               </p>
+              {currentUser.user_phone && (
+                <p className="text-sm text-gray-700">
+                  <strong>Phone:</strong> {currentUser.user_phone}
+                </p>
+              )}
               {currentUser.user_address && (
                 <p className="text-sm text-gray-700">
                   <strong>Address:</strong> {currentUser.user_address}
@@ -309,10 +314,6 @@ export default function SimpleCartPage() {
               <div className="flex justify-between text-gray-700">
                 <span>Subtotal</span>
                 <span>GHC {subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-gray-700">
-                <span>Tax (10%)</span>
-                <span>GHC {tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-gray-700">
                 <span>Shipping</span>
@@ -329,14 +330,14 @@ export default function SimpleCartPage() {
             <button
               onClick={handleConfirmOrder}
               disabled={loading}
-              className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition mb-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full px-6 py-3 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 transition mb-3 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {loading ? 'Processing...' : 'Confirm Order'}
             </button>
 
             <Link
               href="/shop"
-              className="block text-center text-indigo-600 hover:text-indigo-700 font-medium"
+              className="block text-center text-brand-600 hover:text-brand-700 font-medium"
             >
               Continue Shopping
             </Link>

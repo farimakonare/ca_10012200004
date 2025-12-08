@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ShoppingCart, User, Search, Home, LogOut, Package } from 'lucide-react';
@@ -139,17 +140,23 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-sand-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white border-b border-sand-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/shop" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">Cz</span>
+              <div className="relative h-8 w-8">
+                <Image
+                  src="/panaya-logo.jpeg"
+                  alt="Panaya"
+                  fill
+                  className="rounded-lg object-cover"
+                  priority
+                />
               </div>
-              <span className="text-xl font-bold text-gray-900">Cartzie</span>
+              <span className="text-xl font-bold text-gray-900">Panaya</span>
             </Link>
 
             {/* Search Bar */}
@@ -160,7 +167,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                 />
                 <Search className="pointer-events-none absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
               </form>
@@ -171,7 +178,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               <Link
                 href="/shop"
                 className={`flex items-center gap-2 text-sm font-medium transition ${
-                  pathname === '/shop' ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600'
+                  pathname === '/shop' ? 'text-brand-600' : 'text-gray-700 hover:text-brand-600'
                 }`}
               >
                 <Home className="w-5 h-5" />
@@ -182,8 +189,8 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                 href="/shop/orders"
                 className={`flex items-center gap-2 text-sm font-medium transition ${
                   pathname.startsWith('/shop/orders')
-                    ? 'text-indigo-600'
-                    : 'text-gray-700 hover:text-indigo-600'
+                    ? 'text-brand-600'
+                    : 'text-gray-700 hover:text-brand-600'
                 }`}
               >
                 <Package className="w-5 h-5" />
@@ -194,7 +201,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
               <button
                 onClick={handleCartClick}
                 className={`flex items-center gap-2 text-sm font-medium transition relative ${
-                  pathname === '/shop/cart' ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600'
+                  pathname === '/shop/cart' ? 'text-brand-600' : 'text-gray-700 hover:text-brand-600'
                 }`}
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -211,7 +218,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                 <button
                   onClick={handleProfileClick}
                   className={`flex items-center gap-2 text-sm font-medium transition ${
-                    pathname === '/shop/profile' ? 'text-indigo-600' : 'text-gray-700 hover:text-indigo-600'
+                    pathname === '/shop/profile' ? 'text-brand-600' : 'text-gray-700 hover:text-brand-600'
                   }`}
                 >
                   <User className="w-5 h-5" />
@@ -227,6 +234,11 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                       <div className="px-4 py-3 border-b border-gray-200">
                         <p className="text-sm font-semibold text-gray-900">{currentUser.user_name}</p>
                         <p className="text-xs text-gray-600">{currentUser.user_email}</p>
+                        {currentUser.user_phone && (
+                          <p className="text-xs text-gray-600">
+                            <span className="font-medium">Phone:</span> {currentUser.user_phone}
+                          </p>
+                        )}
                         {currentUser.user_address && (
                           <p className="text-xs text-gray-500 mt-1">
                             <span className="font-medium">Address:</span> {currentUser.user_address}
@@ -271,7 +283,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
               />
               <Search className="pointer-events-none absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
             </form>
@@ -286,7 +298,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       <footer className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-sm text-gray-600">
-            <p>&copy; 2025 Cartzie. All rights reserved.</p>
+            <p>&copy; 2025 Panaya. All rights reserved.</p>
           </div>
         </div>
       </footer>

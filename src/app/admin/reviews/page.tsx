@@ -64,7 +64,7 @@
 //           <CardContent>
 //             <div className="flex items-center gap-2">
 //               <div className="text-2xl font-bold">{avgRating.toFixed(1)}</div>
-//               <Star className="h-5 w-5 fill-amber-500 text-amber-500" />
+//               <Star className="h-5 w-5 fill-amber-500 text-brand-500" />
 //             </div>
 //           </CardContent>
 //         </Card>
@@ -87,7 +87,7 @@
 //             </CardTitle>
 //           </CardHeader>
 //           <CardContent>
-//             <div className="text-2xl font-bold text-amber-600">
+//             <div className="text-2xl font-bold text-brand-600">
 //               {reviews.filter((r) => r.rating <= 2).length}
 //             </div>
 //           </CardContent>
@@ -149,7 +149,7 @@
 //                               key={i}
 //                               className={`h-4 w-4 ${
 //                                 i < review.rating
-//                                   ? "fill-amber-500 text-amber-500"
+//                                   ? "fill-amber-500 text-brand-500"
 //                                   : "text-muted"
 //                               }`}
 //                             />

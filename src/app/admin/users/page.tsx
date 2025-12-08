@@ -9,6 +9,7 @@ type User = {
   user_name: string;
   user_email: string;
   user_address?: string;
+  user_phone?: string;
   role: string;
   orders?: number;
   totalSpent?: number;
@@ -25,6 +26,7 @@ export default function UsersPage() {
     user_email: '',
     user_password: '',
     user_address: '',
+    user_phone: '',
     role: 'customer',
   });
 
@@ -52,6 +54,7 @@ export default function UsersPage() {
       user_email: user.user_email,
       user_password: '',
       user_address: user.user_address || '',
+      user_phone: user.user_phone || '',
       role: user.role,
     });
     setShowModal(true);
@@ -103,6 +106,7 @@ export default function UsersPage() {
         user_email: '',
         user_password: '',
         user_address: '',
+        user_phone: '',
         role: 'customer',
       });
       fetchUsers();
@@ -114,7 +118,7 @@ export default function UsersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -131,11 +135,12 @@ export default function UsersPage() {
               user_email: '',
               user_password: '',
               user_address: '',
+              user_phone: '',
               role: 'customer',
             });
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
         >
           <Plus className="w-5 h-5" />
           Add User
@@ -155,6 +160,9 @@ export default function UsersPage() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Phone
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Role
@@ -182,12 +190,15 @@ export default function UsersPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {user.user_email}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {user.user_phone || '—'}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
                         user.role === 'admin'
                           ? 'bg-purple-100 text-purple-800'
-                          : 'bg-green-100 text-green-800'
+                          : 'bg-leaf-100 text-leaf-800'
                       }`}
                     >
                       {user.role}
@@ -202,7 +213,7 @@ export default function UsersPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                     <button
                       onClick={() => handleEdit(user)}
-                      className="text-indigo-600 hover:text-indigo-900 inline-flex items-center gap-1"
+                      className="text-brand-600 hover:text-brand-900 inline-flex items-center gap-1"
                     >
                       <Edit className="w-4 h-4" />
                       Edit
@@ -234,7 +245,7 @@ export default function UsersPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.user_name}
                   onChange={(e) => setFormData({ ...formData, user_name: e.target.value })}
                   required
@@ -244,10 +255,20 @@ export default function UsersPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   type="email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.user_email}
                   onChange={(e) => setFormData({ ...formData, user_email: e.target.value })}
                   required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="tel"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
+                  value={formData.user_phone}
+                  onChange={(e) => setFormData({ ...formData, user_phone: e.target.value })}
+                  placeholder="+233 00 000 0000"
                 />
               </div>
               <div>
@@ -256,7 +277,7 @@ export default function UsersPage() {
                 </label>
                 <input
                   type="password"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.user_password}
                   onChange={(e) => setFormData({ ...formData, user_password: e.target.value })}
                   required={!editUser}
@@ -266,7 +287,7 @@ export default function UsersPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.user_address}
                   onChange={(e) => setFormData({ ...formData, user_address: e.target.value })}
                 />
@@ -274,7 +295,7 @@ export default function UsersPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                   value={formData.role}
                   onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 >
@@ -295,7 +316,7 @@ export default function UsersPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition"
                 >
                   {editUser ? 'Update' : 'Create'}
                 </button>

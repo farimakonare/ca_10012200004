@@ -49,7 +49,7 @@ const orderStatusMeta: Record<
 > = {
   pending_payment: {
     label: 'Pending payment',
-    badgeClass: 'bg-orange-100 text-orange-800',
+    badgeClass: 'bg-brand-100 text-brand-800',
     message: 'Send your payment proof so we can start preparing your order.',
   },
   pending_review: {
@@ -64,7 +64,7 @@ const orderStatusMeta: Record<
   },
   preparing_shipment: {
     label: 'Preparing order',
-    badgeClass: 'bg-indigo-100 text-indigo-800',
+    badgeClass: 'bg-brand-100 text-brand-800',
     message: 'Packaging is underway before the courier picks it up.',
   },
   in_transit: {
@@ -74,20 +74,20 @@ const orderStatusMeta: Record<
   },
   completed: {
     label: 'Delivered',
-    badgeClass: 'bg-green-100 text-green-800',
+    badgeClass: 'bg-leaf-100 text-leaf-800',
     message: 'Enjoy your Panaya goodies! Thanks for shopping with us.',
   },
   cancelled: {
     label: 'Cancelled',
-    badgeClass: 'bg-rose-100 text-rose-800',
+    badgeClass: 'bg-berry-100 text-berry-800',
     message: 'This order was cancelled.',
   },
 };
 
 const paymentStatusColors: Record<string, string> = {
-  pending_payment: 'bg-orange-100 text-orange-800',
+  pending_payment: 'bg-brand-100 text-brand-800',
   under_review: 'bg-yellow-100 text-yellow-800',
-  paid: 'bg-green-100 text-green-800',
+  paid: 'bg-leaf-100 text-leaf-800',
 };
 
 const shipmentStatusMeta: Record<string, { label: string; badgeClass: string }> = {
@@ -100,8 +100,8 @@ const shipmentStatusMeta: Record<string, { label: string; badgeClass: string }> 
     label: 'Out for delivery',
     badgeClass: 'bg-purple-100 text-purple-800',
   },
-  delivered: { label: 'Delivered', badgeClass: 'bg-green-100 text-green-800' },
-  cancelled: { label: 'Cancelled', badgeClass: 'bg-rose-100 text-rose-800' },
+  delivered: { label: 'Delivered', badgeClass: 'bg-leaf-100 text-leaf-800' },
+  cancelled: { label: 'Cancelled', badgeClass: 'bg-berry-100 text-berry-800' },
 };
 
 const formatStatus = (status: string) =>
@@ -311,7 +311,7 @@ export default function CustomerOrdersPage() {
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center h-80">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -319,7 +319,7 @@ export default function CustomerOrdersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-80">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -331,7 +331,7 @@ export default function CustomerOrdersPage() {
       <p className="text-gray-500 mb-6">Start shopping to see your orders, payments, and shipments.</p>
       <Link
         href="/shop"
-        className="inline-flex items-center rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700"
+        className="inline-flex items-center rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-700"
       >
         Browse products
       </Link>
@@ -351,7 +351,7 @@ export default function CustomerOrdersPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold capitalize ${
-                activeTab === tab ? 'bg-indigo-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'
+                activeTab === tab ? 'bg-brand-600 text-white shadow' : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
               {tab === 'orders' && <Package className="w-4 h-4" />}
@@ -375,12 +375,12 @@ export default function CustomerOrdersPage() {
                   value={orderSearch}
                   onChange={(e) => setOrderSearch(e.target.value)}
                   placeholder="Search by order # or item"
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 />
                 <select
                   value={orderStatusFilter}
                   onChange={(e) => setOrderStatusFilter(e.target.value)}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 >
                   <option value="all">All order statuses</option>
                   {ORDER_STATUS_OPTIONS.map((status) => (
@@ -444,7 +444,7 @@ export default function CustomerOrdersPage() {
                         <div className="mt-3">
                           <Link
                             href={`/shop/payments/${order.order_id}`}
-                            className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700"
+                            className="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700"
                           >
                             <Upload className="w-3 h-3" /> Upload payment proof
                           </Link>
@@ -462,7 +462,7 @@ export default function CustomerOrdersPage() {
                       <select
                         value={ordersPerPage}
                         onChange={(e) => setOrdersPerPage(Number(e.target.value))}
-                        className="w-[100px] rounded-lg border border-gray-200 px-2 py-1 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        className="w-[100px] rounded-lg border border-gray-200 px-2 py-1 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                       >
                         {[2, 5, 10, 20].map((size) => (
                           <option key={size} value={size}>
@@ -508,12 +508,12 @@ export default function CustomerOrdersPage() {
                   value={paymentSearch}
                   onChange={(e) => setPaymentSearch(e.target.value)}
                   placeholder="Search by order #"
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 />
                 <select
                   value={paymentStatusFilter}
                   onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 >
                   <option value="all">All payment statuses</option>
                   {PAYMENT_STATUS_OPTIONS.map((status) => (
@@ -526,7 +526,7 @@ export default function CustomerOrdersPage() {
                   <select
                     value={paymentsPerPage}
                     onChange={(e) => setPaymentsPerPage(Number(e.target.value))}
-                    className="w-32 rounded-2xl border border-gray-200 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-32 rounded-2xl border border-gray-200 px-3 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                   >
                     {[2, 5, 10, 20].map((size) => (
                       <option key={size} value={size}>
@@ -564,20 +564,19 @@ export default function CustomerOrdersPage() {
                         </span>
                       </div>
                     <p className="mt-3 text-sm text-gray-600">
-                      Transfer to panaya@payments.com or wallet 055-000-123. Upload a screenshot for review.
+                      Transfer to panaya@payments.com or wallet 0543214529. Upload a screenshot for review.
                     </p>
                     {order.payment?.payment_status === 'pending_payment' ? (
                       <div className="mt-4 flex flex-wrap gap-3">
                         <Link
                           href={`/shop/payments/${order.order_id}`}
-                          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                          className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
                         >
                           Upload proof
                         </Link>
                       </div>
                     ) : (
                       <p className="mt-4 inline-flex items-center gap-2 rounded-lg bg-yellow-50 px-3 py-2 text-sm font-medium text-yellow-700">
-                        <Upload className="h-4 w-4" />
                         {order.payment?.payment_status === 'paid'
                           ? 'Payment approved'
                           : 'Pending approval'}
@@ -640,12 +639,12 @@ export default function CustomerOrdersPage() {
                   value={shipmentSearch}
                   onChange={(e) => setShipmentSearch(e.target.value)}
                   placeholder="Search by shipment or order #"
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 />
                 <select
                   value={shipmentStatusFilter}
                   onChange={(e) => setShipmentStatusFilter(e.target.value)}
-                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-2xl border border-gray-200 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                 >
                   <option value="all">All shipment statuses</option>
                   {SHIPMENT_STATUS_OPTIONS.map((status) => (
@@ -719,7 +718,7 @@ export default function CustomerOrdersPage() {
                             <div className="space-y-3">
                               {events.map((event) => (
                                 <div key={event.event_id} className="relative pl-5">
-                                  <span className="absolute left-1 top-2 h-2 w-2 rounded-full bg-indigo-500" />
+                                  <span className="absolute left-1 top-2 h-2 w-2 rounded-full bg-brand-500" />
                                   <p className="text-sm font-semibold text-gray-900">
                                     {formatStatus(event.status)}{' '}
                                     <span className="ml-2 text-xs font-normal text-gray-500">
@@ -744,7 +743,7 @@ export default function CustomerOrdersPage() {
                       <select
                         value={shipmentsPerPage}
                         onChange={(e) => setShipmentsPerPage(Number(e.target.value))}
-                        className="w-[100px] rounded-lg border border-gray-200 px-2 py-1 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        className="w-[100px] rounded-lg border border-gray-200 px-2 py-1 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                       >
                         {[2, 5, 10, 20].map((size) => (
                           <option key={size} value={size}>

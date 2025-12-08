@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, Edit } from 'lucide-react';
 import Image from 'next/image';
 import { useNotification } from '@/components/NotificationProvider';
 
@@ -11,7 +11,7 @@ type Order = {
   order_date: string;
   total_amount: number;
   status: string;
-  user?: { user_name: string; user_email: string };
+  user?: { user_name: string; user_email: string; user_phone?: string | null; user_address?: string | null };
   orderItems?: Array<{
     order_item_id: number;
     quantity: number;
@@ -191,11 +191,11 @@ export default function OrdersPage() {
 const paymentBadgeClass = (status: string | undefined) => {
   switch (status) {
     case 'paid':
-      return 'bg-green-100 text-green-800';
+      return 'bg-leaf-100 text-leaf-800';
     case 'under_review':
       return 'bg-yellow-100 text-yellow-800';
     case 'pending_payment':
-      return 'bg-orange-100 text-orange-800';
+      return 'bg-brand-100 text-brand-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -239,7 +239,7 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -256,12 +256,12 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
           value={orderSearch}
           onChange={(e) => setOrderSearch(e.target.value)}
           placeholder="Search order # or customer"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
         <select
           value={orderStatusFilter}
           onChange={(e) => setOrderStatusFilter(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         >
           <option value="all">All order statuses</option>
           <option value="pending_payment">Pending payment</option>
@@ -324,7 +324,7 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         order.status === 'completed'
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-leaf-100 text-leaf-800'
                           : ['pending', 'pending_payment', 'pending_review'].includes(order.status)
                           ? 'bg-yellow-100 text-yellow-800'
                           : order.status === 'processing'
@@ -338,7 +338,7 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                     <button
                       onClick={() => handleViewOrder(order)}
-                      className="text-indigo-600 hover:text-indigo-900 inline-flex items-center gap-1"
+                      className="text-brand-600 hover:text-brand-900 inline-flex items-center gap-1"
                     >
                       <Eye className="w-4 h-4" />
                       View
@@ -418,6 +418,16 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
                 <p className="text-sm text-gray-700">
                   <strong>Email:</strong> {selectedOrder.user?.user_email}
                 </p>
+                {selectedOrder.user?.user_phone && (
+                  <p className="text-sm text-gray-700">
+                    <strong>Phone:</strong> {selectedOrder.user.user_phone}
+                  </p>
+                )}
+                {selectedOrder.user?.user_address && (
+                  <p className="text-sm text-gray-700">
+                    <strong>Address:</strong> {selectedOrder.user.user_address}
+                  </p>
+                )}
               </div>
 
               {/* Order Info */}
@@ -464,7 +474,7 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
                     <button
                       onClick={handleApprovePayment}
                       disabled={selectedOrder.payment.payment_status !== 'under_review'}
-                      className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white disabled:bg-gray-300"
+                      className="rounded-lg bg-leaf-600 px-4 py-2 text-sm font-semibold text-white disabled:bg-gray-300"
                     >
                       Approve Payment
                     </button>
@@ -489,7 +499,7 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
                   <div className="space-y-3">
                     {selectedOrder.shipment.events.map((event) => (
                       <div key={event.event_id} className="relative pl-5">
-                        <span className="absolute left-1 top-2 h-2 w-2 rounded-full bg-indigo-500" />
+                        <span className="absolute left-1 top-2 h-2 w-2 rounded-full bg-brand-500" />
                         <p className="text-sm font-semibold text-gray-900">
                           {event.status.replace('_', ' ')}{' '}
                           <span className="ml-2 text-xs font-normal text-gray-500">
@@ -528,7 +538,7 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
                 <h4 className="font-semibold text-gray-900 mb-2">Update Order Status</h4>
                 <div className="flex gap-2">
                   <select
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-600"
                     value={statusUpdate}
                     onChange={(e) => setStatusUpdate(e.target.value)}
                   >
@@ -542,7 +552,7 @@ const formatAdminPaymentStatus = (status: string | undefined) => {
                   </select>
                   <button
                     onClick={handleUpdateStatus}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2"
+                    className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition flex items-center gap-2"
                   >
                     <Edit className="w-4 h-4" />
                     Update

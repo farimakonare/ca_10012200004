@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { NotificationProvider } from '@/components/NotificationProvider'
 
 export const metadata: Metadata = {
-  title: 'Cartzie',
+  title: 'Panaya',
   description: 'E-commerce website',
 }
 

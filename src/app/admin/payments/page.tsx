@@ -13,10 +13,10 @@ type PaymentRecord = {
   payment_status: string;
   total_amount: number;
   proof_image?: string | null;
-  user?: { user_name: string; user_email: string } | null;
+  user?: { user_name: string; user_email: string; user_phone?: string | null } | null;
   order?: {
     status: string;
-    user?: { user_name: string; user_email: string } | null;
+    user?: { user_name: string; user_email: string; user_phone?: string | null } | null;
     shipment?: { shipment_id: number; status: string } | null;
   } | null;
 };
@@ -24,11 +24,11 @@ type PaymentRecord = {
 const badgeClass = (status: string) => {
   switch (status) {
     case 'paid':
-      return 'bg-green-100 text-green-800';
+      return 'bg-leaf-100 text-leaf-800';
     case 'under_review':
       return 'bg-yellow-100 text-yellow-800';
     case 'pending_payment':
-      return 'bg-orange-100 text-orange-800';
+      return 'bg-brand-100 text-brand-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -130,6 +130,7 @@ export default function AdminPaymentsPage() {
             String(payment.order_id),
             payment.user?.user_name ?? payment.order?.user?.user_name ?? '',
             payment.user?.user_email ?? payment.order?.user?.user_email ?? '',
+            payment.user?.user_phone ?? payment.order?.user?.user_phone ?? '',
           ].some((value) => value.toLowerCase().includes(normalizedSearch))
         : true;
       return matchesStatus && matchesSearch;
@@ -156,7 +157,7 @@ export default function AdminPaymentsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-80">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -166,7 +167,7 @@ export default function AdminPaymentsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-indigo-500" />
+            <CreditCard className="w-5 h-5 text-brand-500" />
             Payment Reviews
           </h1>
           <p className="text-gray-600 mt-1">Approve receipts or request a new upload.</p>
@@ -182,12 +183,12 @@ export default function AdminPaymentsPage() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search order # or customer"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
         >
           <option value="all">All payment statuses</option>
           <option value="pending_payment">Pending payment</option>
@@ -226,6 +227,11 @@ export default function AdminPaymentsPage() {
                     <div className="text-xs text-gray-500">
                       {payment.user?.user_email || payment.order?.user?.user_email}
                     </div>
+                    {(payment.user?.user_phone || payment.order?.user?.user_phone) && (
+                      <div className="text-xs text-gray-500">
+                        {payment.user?.user_phone || payment.order?.user?.user_phone}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 font-semibold text-gray-900">
                     GHC {payment.total_amount.toFixed(2)}
@@ -258,7 +264,7 @@ export default function AdminPaymentsPage() {
                     <button
                       onClick={() => handleApprove(payment)}
                       disabled={payment.payment_status !== 'under_review'}
-                      className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white disabled:bg-gray-300"
+                      className="rounded-lg bg-leaf-600 px-3 py-1.5 text-xs font-semibold text-white disabled:bg-gray-300"
                     >
                       Approve
                     </button>

@@ -165,7 +165,7 @@ export default function PaymentProofPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-80">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -177,7 +177,7 @@ export default function PaymentProofPage() {
         <p className="text-gray-600 mb-6">{error || 'Order details unavailable.'}</p>
         <Link
           href="/shop/orders"
-          className="inline-flex items-center px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+          className="inline-flex items-center px-6 py-3 rounded-lg bg-brand-600 text-white font-semibold hover:bg-brand-700"
         >
           Go to Orders
         </Link>
@@ -194,7 +194,7 @@ export default function PaymentProofPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="mb-8">
-        <Link href="/shop/orders" className="text-sm text-indigo-500 hover:text-indigo-700">
+        <Link href="/shop/orders" className="text-sm text-brand-500 hover:text-brand-700">
           ← Back to Orders
         </Link>
         <h1 className="text-3xl font-bold text-gray-900 mt-4">Upload Payment Proof</h1>
@@ -230,8 +230,7 @@ export default function PaymentProofPage() {
           <div className="mt-6 rounded-xl bg-gray-50 p-4 text-sm text-gray-600">
             <p className="font-semibold text-gray-900 mb-1">Payment Instructions</p>
             <p>
-              Transfer the total amount to panaya@payments.com or use our mobile wallet
-              055-000-123. Upload a clear screenshot or photo of the receipt below.
+              Transfer the total amount to our mobile wallet 0543214529. Upload a clear screenshot or photo of the receipt below.
             </p>
           </div>
         </div>
@@ -275,7 +274,7 @@ export default function PaymentProofPage() {
             <button
               onClick={handleSubmit}
               disabled={submitDisabled}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               {uploading ? (
                 <>
@@ -297,7 +296,7 @@ export default function PaymentProofPage() {
       </div>
 
       {(pendingReview || paid) && (
-        <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+        <div className="mt-8 rounded-2xl border border-leaf-200 bg-leaf-50 p-4 text-sm text-leaf-800">
           {paid
             ? 'Payment confirmed! We will notify you once your order ships.'
             : 'Thanks! Your proof is pending admin review.'}

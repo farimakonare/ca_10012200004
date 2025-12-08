@@ -13,6 +13,7 @@ model User {
   user_password String
   user_email    String  @unique
   user_address  String?
+  user_phone    String?
   role          String  @default("customer")
 
   orders   Order[]

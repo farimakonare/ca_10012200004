@@ -116,7 +116,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -127,7 +127,7 @@ export default function ProductDetailPage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Product not found</h2>
         <button
           onClick={() => router.push('/')}
-          className="text-indigo-600 hover:text-indigo-700"
+          className="text-brand-600 hover:text-brand-700"
         >
           Go back to shop
         </button>
@@ -171,7 +171,7 @@ export default function ProductDetailPage() {
         {/* Product Info */}
         <div>
           {/* Category Badge */}
-          <span className="inline-block px-3 py-1 text-sm font-medium bg-indigo-100 text-indigo-600 rounded-full mb-4">
+          <span className="inline-block px-3 py-1 text-sm font-medium bg-brand-100 text-brand-600 rounded-full mb-4">
             {product.category?.name}
           </span>
 
@@ -210,7 +210,7 @@ export default function ProductDetailPage() {
             <span
               className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                 product.stock_quantity > 10
-                  ? 'bg-green-100 text-green-700'
+                  ? 'bg-leaf-100 text-leaf-700'
                   : product.stock_quantity > 0
                   ? 'bg-yellow-100 text-yellow-700'
                   : 'bg-red-100 text-red-700'
@@ -256,7 +256,7 @@ export default function ProductDetailPage() {
           <button
             onClick={addToCart}
             disabled={product.stock_quantity === 0}
-            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             <ShoppingCart className="w-5 h-5" />
             Add to Cart

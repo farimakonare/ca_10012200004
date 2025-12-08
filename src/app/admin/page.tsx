@@ -57,9 +57,11 @@ export default function AdminDashboardPage() {
       ).length;
       const lowStockProducts = products.filter((p: any) => p.stock_quantity < 10).length;
 
+      const totalCustomers = users.filter((user: any) => user.role === 'customer').length;
+
       setStats({
         totalProducts: products.length,
-        totalUsers: users.length,
+        totalUsers: totalCustomers,
         totalOrders: orders.length,
         totalRevenue,
         pendingOrders,
@@ -80,7 +82,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -95,26 +97,26 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <Package className="w-6 h-6 text-indigo-600" />
+            <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center">
+              <Package className="w-6 h-6 text-brand-600" />
             </div>
-            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-leaf-600 bg-leaf-50 px-2 py-1 rounded-full">
               Active
             </span>
           </div>
           <p className="text-sm text-gray-600 mb-1">Total Products</p>
           <p className="text-3xl font-bold text-gray-900">{stats.totalProducts}</p>
           {stats.lowStockProducts > 0 && (
-            <p className="text-xs text-orange-600 mt-2">{stats.lowStockProducts} low stock</p>
+            <p className="text-xs text-brand-600 mt-2">{stats.lowStockProducts} low stock</p>
           )}
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-leaf-100 rounded-lg flex items-center justify-center">
+              <Users className="w-6 h-6 text-leaf-600" />
             </div>
-            <TrendingUp className="w-5 h-5 text-green-600" />
+            <TrendingUp className="w-5 h-5 text-leaf-600" />
           </div>
           <p className="text-sm text-gray-600 mb-1">Total Users</p>
           <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
@@ -123,11 +125,11 @@ export default function AdminDashboardPage() {
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center">
+              <ShoppingCart className="w-6 h-6 text-brand-600" />
             </div>
             {stats.pendingOrders > 0 && (
-              <span className="text-xs font-medium text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full">
+              <span className="text-xs font-medium text-sand-600 bg-sand-50 px-2 py-1 rounded-full">
                 {stats.pendingOrders} pending
               </span>
             )}
@@ -139,10 +141,10 @@ export default function AdminDashboardPage() {
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <span className="text-sm font-bold text-yellow-600">GHC</span>
+            <div className="w-12 h-12 bg-sand-100 rounded-lg flex items-center justify-center">
+              <span className="text-sm font-bold text-sand-600">GHC</span>
             </div>
-            <TrendingUp className="w-5 h-5 text-green-600" />
+            <TrendingUp className="w-5 h-5 text-leaf-600" />
           </div>
           <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
           <p className="text-3xl font-bold text-gray-900">GHC {stats.totalRevenue.toFixed(2)}</p>
@@ -151,12 +153,12 @@ export default function AdminDashboardPage() {
       </div>
 
       {(stats.pendingOrders > 0 || stats.lowStockProducts > 0) && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-sand-50 border border-sand-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-sand-600 mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-semibold text-yellow-900 mb-1">Attention Required</h3>
-              <ul className="text-sm text-yellow-800 space-y-1">
+              <h3 className="font-semibold text-sand-900 mb-1">Attention Required</h3>
+              <ul className="text-sm text-sand-800 space-y-1">
                 {stats.pendingOrders > 0 && (
                   <li>• {stats.pendingOrders} order(s) waiting for payment or processing</li>
                 )}
@@ -173,7 +175,7 @@ export default function AdminDashboardPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
-            <Link href="/admin/orders" className="text-sm text-indigo-600 font-medium">
+            <Link href="/admin/orders" className="text-sm text-brand-600 font-medium">
               View all
             </Link>
           </div>
@@ -216,7 +218,7 @@ export default function AdminDashboardPage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-sand-50"
               >
                 {link.label}
                 <span className="text-gray-400">→</span>
