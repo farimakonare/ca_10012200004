@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { Analytics } from '@vercel/analytics/next'
 import { NotificationProvider } from '@/components/NotificationProvider'
 import { Analytics } from '@vercel/analytics/next'
 
